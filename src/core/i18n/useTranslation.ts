@@ -23,7 +23,7 @@ export function useTranslation() {
 
   const t = useCallback<TFunction>(
     (key, vars) => {
-      const dict = dictionaries[locale] ?? dictionaries.vi;
+      const dict = dictionaries[locale] ?? dictionaries.en;
       const value = dict[key] ?? dictionaries.en[key] ?? key;
       return interpolate(value, vars);
     },
@@ -39,7 +39,7 @@ export function localizePlugin(
   id: string,
   fallback: { name: string; description: string },
 ): { name: string; description: string } {
-  const dict = dictionaries[locale] ?? dictionaries.vi;
+  const dict = dictionaries[locale] ?? dictionaries.en;
   return {
     name: dict[`plugins.${id}.name`] ?? fallback.name,
     description: dict[`plugins.${id}.description`] ?? fallback.description,

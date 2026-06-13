@@ -61,8 +61,14 @@ import {
   LockOpen,
   Bird,
   Blocks,
+  Route,
+  MapPin,
+  Navigation,
+  LocateFixed,
+  Square,
   type LucideIcon,
 } from "lucide-react";
+import { cn } from "@/shared/utils/cn";
 
 /**
  * Central icon map. Plugins reference icons by string name (keeps the plugin
@@ -131,6 +137,11 @@ export const ICONS = {
   LockOpen,
   Bird,
   Blocks,
+  Route,
+  MapPin,
+  Navigation,
+  LocateFixed,
+  Square,
 } satisfies Record<string, LucideIcon>;
 
 export type IconName = keyof typeof ICONS;
@@ -145,5 +156,6 @@ interface IconProps {
 /** Render a lucide icon by name, falling back to a neutral glyph. */
 export function Icon({ name, className, size = 20, strokeWidth = 2 }: IconProps) {
   const Cmp = (ICONS as Record<string, LucideIcon>)[name] ?? Sparkles;
-  return <Cmp className={className} size={size} strokeWidth={strokeWidth} />;
+  // `shrink-0` keeps the icon from being squashed inside tight flex layouts.
+  return <Cmp className={cn("shrink-0", className)} size={size} strokeWidth={strokeWidth} />;
 }

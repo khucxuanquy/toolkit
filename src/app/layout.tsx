@@ -34,7 +34,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="vi" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <head>
         {/* Set the theme class before hydration to prevent a flash of wrong theme. */}
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />

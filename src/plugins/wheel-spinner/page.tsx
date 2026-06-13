@@ -14,10 +14,14 @@ export default function WheelSpinnerPage() {
   const wheel = useWheel();
   const { t } = useTranslation();
   const [winner, setWinner] = useState<WheelEntry | null>(null);
+  const [winners, setWinners] = useState<string[]>([]);
 
   const handleResult = (entry: WheelEntry) => {
     setWinner(entry);
-    if (wheel.settings.removeWinner) wheel.removeEntry(entry.id);
+    if (wheel.settings.removeWinner) {
+      setWinners((w) => [entry.label, ...w]);
+      wheel.removeEntry(entry.id);
+    }
   };
 
   return (
@@ -29,11 +33,39 @@ export default function WheelSpinnerPage() {
             <Wheel
               entries={wheel.entries}
               soundEnabled={wheel.settings.soundEnabled}
+              instantResult={wheel.settings.instantResult}
               onResult={handleResult}
             />
             {!wheel.canSpin && <p className="text-muted text-sm">{t("wheel.addTwo")}</p>}
           </CardBody>
         </Card>
+
+        {/* Past winners (only meaningful when winners are removed after each spin) */}
+        {wheel.settings.removeWinner && winners.length > 0 && (
+          <Card>
+            <CardBody className="space-y-2">
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold">{t("wheel.winners")}</h3>
+                <Button variant="ghost" size="sm" onClick={() => setWinners([])}>
+                  <Icon name="Trash2" size={15} /> {t("wheel.clearWinners")}
+                </Button>
+              </div>
+              <ol className="space-y-1.5">
+                {winners.map((w, i) => (
+                  <li
+                    key={`${w}-${i}`}
+                    className="border-border bg-surface flex items-center gap-2 rounded-lg border px-3 py-2 text-sm"
+                  >
+                    <span className="bg-surface-2 text-muted flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold tabular-nums">
+                      {winners.length - i}
+                    </span>
+                    <span className="truncate font-medium">{w}</span>
+                  </li>
+                ))}
+              </ol>
+            </CardBody>
+          </Card>
+        )}
 
         <Card>
           <CardBody>
@@ -62,8 +94,7 @@ export default function WheelSpinnerPage() {
             onLoad={wheel.loadPreset}
             onDelete={wheel.deletePreset}
             onSettings={wheel.setSettings}
-            onImport={wheel.importData}
-            exportData={wheel.exportData}
+            onAddNumbers={(n) => wheel.addMany(Array.from({ length: n }, (_, i) => String(i + 1)))}
           />
         </CardBody>
       </Card>

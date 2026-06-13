@@ -19,13 +19,13 @@ import "@/plugins/password-generator";
 import "@/plugins/memory";
 import "@/plugins/2048";
 import "@/plugins/coin-dice";
-import "@/plugins/random-picker";
 import "@/plugins/color-palette";
 import "@/plugins/todo";
 import "@/plugins/notes";
 import "@/plugins/unit-converter";
 import "@/plugins/flappy-bird";
 import "@/plugins/tower";
+import "@/plugins/route-tracker";
 
 /** Imported for its side effects only. */
 export const PLUGINS_REGISTERED = true;

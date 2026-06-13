@@ -7,6 +7,16 @@ export const manifest: PluginManifest = {
   category: "Utilities",
   icon: "Disc3",
   route: "/p/wheel-spinner",
-  tags: ["random", "picker", "raffle", "names", "decision"],
+  tags: [
+    "random",
+    "picker",
+    "raffle",
+    "names",
+    "decision",
+    "number",
+    "bốc số",
+    "chọn ngẫu nhiên",
+    "vòng quay",
+  ],
   accent: "from-pink-500 to-rose-500",
 };

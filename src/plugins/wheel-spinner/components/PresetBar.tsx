@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { Button, Input, Icon, useToast } from "@/shared/ui";
 import { useTranslation } from "@/core/i18n/useTranslation";
 import { cn } from "@/shared/utils/cn";
@@ -15,8 +15,7 @@ interface PresetBarProps {
   onLoad: (preset: WheelPreset) => void;
   onDelete: (id: string) => void;
   onSettings: (change: Partial<WheelSettings>) => void;
-  onImport: (raw: string) => boolean;
-  exportData: () => string;
+  onAddNumbers: (count: number) => void;
 }
 
 function Toggle({
@@ -34,12 +33,12 @@ function Toggle({
       role="switch"
       aria-checked={checked}
       onClick={() => onChange(!checked)}
-      className="flex items-center justify-between gap-3 text-sm"
+      className="flex w-full items-center justify-between gap-3 text-sm"
     >
-      <span>{label}</span>
+      <span className="text-left">{label}</span>
       <span
         className={cn(
-          "relative h-5 w-9 rounded-full transition-colors",
+          "relative h-5 w-9 shrink-0 rounded-full transition-colors",
           checked ? "bg-primary" : "bg-border",
         )}
       >
@@ -63,13 +62,12 @@ export function PresetBar({
   onLoad,
   onDelete,
   onSettings,
-  onImport,
-  exportData,
+  onAddNumbers,
 }: PresetBarProps) {
   const toast = useToast();
   const { t } = useTranslation();
-  const fileRef = useRef<HTMLInputElement>(null);
   const [name, setName] = useState("");
+  const [count, setCount] = useState("10");
 
   // Localized fallback name when the wheel hasn't been explicitly named.
   const defaultName = t("wheel.defaultName");
@@ -81,24 +79,38 @@ export function PresetBar({
     toast(t("wheel.saved", { name: presetName }), "success");
   };
 
-  const handleExport = () => {
-    const blob = new Blob([exportData()], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${activeName.replace(/\s+/g, "-").toLowerCase() || "wheel"}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
-  const handleFile = async (file: File) => {
-    const text = await file.text();
-    const ok = onImport(text);
-    toast(ok ? t("wheel.imported") : t("wheel.invalidFile"), ok ? "success" : "error");
+  const handleAddNumbers = () => {
+    const n = Math.min(200, Math.max(1, Math.floor(Number(count) || 0)));
+    if (n >= 1) onAddNumbers(n);
   };
 
   return (
     <div className="space-y-5">
+      {/* Quick fill 1..N (merged from the old Random Picker) */}
+      <div className="space-y-2">
+        <h3 className="text-sm font-semibold">{t("wheel.quickNumbers")}</h3>
+        <div className="flex gap-2">
+          <Input
+            type="number"
+            inputMode="numeric"
+            min={1}
+            max={200}
+            value={count}
+            onChange={(e) => setCount(e.target.value)}
+            aria-label={t("wheel.quickNumbers")}
+          />
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={handleAddNumbers}
+            aria-label={t("wheel.fill")}
+          >
+            <Icon name="Plus" size={18} />
+          </Button>
+        </div>
+        <p className="text-muted text-xs">{t("wheel.quickNumbersHint")}</p>
+      </div>
+
       {/* Save current wheel */}
       <div className="space-y-2">
         <h3 className="text-sm font-semibold">{t("wheel.saveThisWheel")}</h3>
@@ -149,40 +161,13 @@ export function PresetBar({
         </div>
       )}
 
-      {/* Import / export */}
-      <div className="flex gap-2">
-        <Button
-          variant="outline"
-          size="sm"
-          className="flex-1"
-          onClick={() => fileRef.current?.click()}
-        >
-          <Icon name="Upload" size={15} /> {t("wheel.import")}
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          className="flex-1"
-          onClick={handleExport}
-          disabled={!hasEntries}
-        >
-          <Icon name="Download" size={15} /> {t("wheel.export")}
-        </Button>
-        <input
-          ref={fileRef}
-          type="file"
-          accept="application/json,.json"
-          className="hidden"
-          onChange={(e) => {
-            const file = e.target.files?.[0];
-            if (file) void handleFile(file);
-            e.target.value = "";
-          }}
-        />
-      </div>
-
       {/* Settings */}
       <div className="border-border space-y-3 border-t pt-4">
+        <Toggle
+          label={t("wheel.instantResult")}
+          checked={!!settings.instantResult}
+          onChange={(v) => onSettings({ instantResult: v })}
+        />
         <Toggle
           label={t("wheel.removeWinnerAfter")}
           checked={settings.removeWinner}

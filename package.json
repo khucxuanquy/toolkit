@@ -19,6 +19,7 @@
     "dexie": "^4.4.3",
     "framer-motion": "^12.40.0",
     "lucide-react": "^1.17.0",
+    "mapbox-gl": "^3.24.1",
     "next": "16.2.9",
     "qrcode.react": "^4.2.0",
     "react": "19.2.4",
@@ -30,6 +31,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@types/mapbox-gl": "^3.4.1",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

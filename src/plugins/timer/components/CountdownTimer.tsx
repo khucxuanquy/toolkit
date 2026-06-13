@@ -105,7 +105,12 @@ export function CountdownTimer() {
 
       <div className="flex justify-center gap-2">
         {status === "running" ? (
-          <Button size="lg" variant="secondary" onClick={pause} className="w-32">
+          <Button
+            size="lg"
+            variant="secondary"
+            onClick={pause}
+            className="min-w-32 whitespace-nowrap"
+          >
             <Icon name="Pause" size={18} /> {t("timer.pause")}
           </Button>
         ) : (
@@ -113,7 +118,7 @@ export function CountdownTimer() {
             size="lg"
             onClick={status === "done" ? reset : start}
             disabled={durationMs <= 0 && status !== "paused"}
-            className="w-32"
+            className="min-w-32 whitespace-nowrap"
           >
             <Icon name="Play" size={18} />{" "}
             {status === "paused"
@@ -124,7 +129,12 @@ export function CountdownTimer() {
           </Button>
         )}
         {(status === "running" || status === "paused") && (
-          <Button size="lg" variant="outline" onClick={reset} className="w-32">
+          <Button
+            size="lg"
+            variant="outline"
+            onClick={reset}
+            className="min-w-32 whitespace-nowrap"
+          >
             <Icon name="RotateCcw" size={18} /> {t("timer.reset")}
           </Button>
         )}

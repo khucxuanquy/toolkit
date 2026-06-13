@@ -87,7 +87,7 @@ function CellMark({
 export function Board({ board, winningLine, disabled, frozen, lifetimeMs, onPlay }: BoardProps) {
   const { t } = useTranslation();
   return (
-    <div className="grid w-full max-w-sm grid-cols-3 gap-2">
+    <div className="grid w-full grid-cols-3 gap-2">
       {board.map((mark, i) => {
         const winning = winningLine?.includes(i) ?? false;
         const playable = !disabled && mark === null;

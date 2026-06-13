@@ -1,21 +1,36 @@
 "use client";
 
 import { useTranslation } from "@/core/i18n/useTranslation";
+import { LOCALES, LOCALE_LABELS, LOCALE_FLAGS } from "@/core/i18n/locale-store";
+import { Dropdown } from "./Dropdown";
 import { Icon } from "./Icon";
 
-/** Toggles the UI language between Vietnamese and English. */
+/**
+ * Language picker. Lists every locale in `LOCALES`, so adding a new language is
+ * just a matter of extending the locale store + dictionaries — the UI scales
+ * automatically.
+ */
 export function LanguageToggle() {
-  const { locale, toggleLocale, t } = useTranslation();
+  const { locale, setLocale, t } = useTranslation();
 
   return (
-    <button
-      onClick={toggleLocale}
-      aria-label={t("nav.language")}
-      title={t("nav.language")}
-      className="border-border bg-surface text-foreground hover:bg-surface-2 flex h-10 items-center gap-1.5 rounded-xl border px-2.5 text-sm font-semibold transition-colors"
-    >
-      <Icon name="Languages" size={18} />
-      <span className="uppercase">{locale}</span>
-    </button>
+    <Dropdown
+      align="right"
+      trigger={
+        <span
+          aria-label={t("nav.language")}
+          title={t("nav.language")}
+          className="border-border bg-surface text-foreground hover:bg-surface-2 flex h-10 items-center gap-1.5 rounded-xl border px-2.5 text-sm font-semibold transition-colors"
+        >
+          <Icon name="Languages" size={18} />
+          <span>{LOCALE_FLAGS[locale]}</span>
+          <span className="uppercase">{locale}</span>
+        </span>
+      }
+      items={LOCALES.map((l) => ({
+        label: `${LOCALE_FLAGS[l]}  ${LOCALE_LABELS[l]}`,
+        onSelect: () => setLocale(l),
+      }))}
+    />
   );
 }

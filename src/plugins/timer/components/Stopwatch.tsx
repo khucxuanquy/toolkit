@@ -50,16 +50,21 @@ export function Stopwatch() {
       </div>
       <div className="flex justify-center gap-2">
         {!running ? (
-          <Button size="lg" onClick={start} className="w-32">
+          <Button size="lg" onClick={start} className="min-w-32 whitespace-nowrap">
             <Icon name="Play" size={18} /> {elapsed > 0 ? t("timer.resume") : t("timer.start")}
           </Button>
         ) : (
-          <Button size="lg" variant="secondary" onClick={pause} className="w-32">
+          <Button
+            size="lg"
+            variant="secondary"
+            onClick={pause}
+            className="min-w-32 whitespace-nowrap"
+          >
             <Icon name="Pause" size={18} /> {t("timer.pause")}
           </Button>
         )}
         {running ? (
-          <Button size="lg" variant="outline" onClick={lap} className="w-32">
+          <Button size="lg" variant="outline" onClick={lap} className="min-w-32 whitespace-nowrap">
             <Icon name="Flag" size={18} /> {t("timer.lap")}
           </Button>
         ) : (
@@ -68,7 +73,7 @@ export function Stopwatch() {
             variant="outline"
             onClick={reset}
             disabled={elapsed === 0}
-            className="w-32"
+            className="min-w-32 whitespace-nowrap"
           >
             <Icon name="RotateCcw" size={18} /> {t("timer.reset")}
           </Button>
