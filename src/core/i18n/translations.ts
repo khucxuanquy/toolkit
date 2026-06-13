@@ -241,6 +241,8 @@ const vi: Dict = {
   "plugins.unit-converter.description": "Đổi độ dài, cân nặng, nhiệt độ và tiền tệ.",
   "plugins.flappy-bird.name": "Chim Vỗ Cánh",
   "plugins.flappy-bird.description": "Vỗ cánh né ống — ăn điểm và phá kỷ lục.",
+  "plugins.tower.name": "Xây Tháp",
+  "plugins.tower.description": "Thả khối thật thẳng để xây tháp cao nhất.",
 
   // Coin & Dice
   "cd.tabCoin": "Đồng xu",
@@ -302,6 +304,18 @@ const vi: Dict = {
   "fb.newBest": "Kỷ lục mới!",
   "fb.restart": "Chơi lại",
   "fb.howto": "Chạm màn hình / nhấn Space hoặc ↑ để vỗ cánh.",
+
+  // Tower Stack
+  "tw.easy": "Dễ",
+  "tw.medium": "Trung bình",
+  "tw.hard": "Khó",
+  "tw.score": "Điểm",
+  "tw.best": "Kỷ lục",
+  "tw.tapToStart": "Chạm hoặc nhấn Space để thả khối",
+  "tw.over": "Hụt rồi!",
+  "tw.newBest": "Kỷ lục mới!",
+  "tw.restart": "Chơi lại",
+  "tw.howto": "Nhấn Space hoặc chạm để thả khối — xếp càng thẳng càng tốt.",
 };
 
 const en: Dict = {
@@ -527,6 +541,8 @@ const en: Dict = {
   "plugins.unit-converter.description": "Convert length, weight, temperature and currency.",
   "plugins.flappy-bird.name": "Flappy Bird",
   "plugins.flappy-bird.description": "Flap through the pipes — score points and beat your best.",
+  "plugins.tower.name": "Tower Stack",
+  "plugins.tower.description": "Drop blocks dead-straight to build the tallest tower.",
 
   // Coin & Dice
   "cd.tabCoin": "Coin",
@@ -588,6 +604,18 @@ const en: Dict = {
   "fb.newBest": "New best!",
   "fb.restart": "Play again",
   "fb.howto": "Tap the screen / press Space or ↑ to flap.",
+
+  // Tower Stack
+  "tw.easy": "Easy",
+  "tw.medium": "Medium",
+  "tw.hard": "Hard",
+  "tw.score": "Score",
+  "tw.best": "Best",
+  "tw.tapToStart": "Tap or press Space to drop a block",
+  "tw.over": "Missed!",
+  "tw.newBest": "New best!",
+  "tw.restart": "Play again",
+  "tw.howto": "Press Space or tap to drop the block — line it up as straight as you can.",
 };
 
 export const dictionaries: Record<Locale, Dict> = { vi, en };

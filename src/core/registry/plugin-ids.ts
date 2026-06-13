@@ -14,6 +14,7 @@ import { manifest as todo } from "@/plugins/todo/manifest";
 import { manifest as notes } from "@/plugins/notes/manifest";
 import { manifest as unitConverter } from "@/plugins/unit-converter/manifest";
 import { manifest as flappyBird } from "@/plugins/flappy-bird/manifest";
+import { manifest as tower } from "@/plugins/tower/manifest";
 
 /**
  * Plugin ids known at build time. Used by `generateStaticParams` so the static
@@ -39,4 +40,5 @@ export const PLUGIN_IDS: string[] = [
   notes.id,
   unitConverter.id,
   flappyBird.id,
+  tower.id,
 ];
