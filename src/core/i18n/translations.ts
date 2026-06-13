@@ -260,6 +260,8 @@ const vi: Dict = {
   "plugins.flappy-bird.description": "Vỗ cánh né ống — ăn điểm và phá kỷ lục.",
   "plugins.tower.name": "Xây Tháp",
   "plugins.tower.description": "Thả khối thật thẳng để xây tháp cao nhất.",
+  "plugins.route-tracker.name": "Bản Đồ Hành Trình",
+  "plugins.route-tracker.description": "Ghi lại đường bạn đã đi trên bản đồ (cần GPS + Internet).",
 
   // Coin & Dice
   "cd.tabCoin": "Đồng xu",
@@ -333,6 +335,19 @@ const vi: Dict = {
   "tw.newBest": "Kỷ lục mới!",
   "tw.restart": "Chơi lại",
   "tw.howto": "Nhấn Space hoặc chạm để thả khối — xếp càng thẳng càng tốt.",
+
+  // Route Tracker
+  "rt.start": "Bắt đầu ghi",
+  "rt.stop": "Dừng lại",
+  "rt.clear": "Xóa đường",
+  "rt.distance": "Quãng đường",
+  "rt.duration": "Thời gian",
+  "rt.points": "Số điểm",
+  "rt.howto": "Bật định vị và di chuyển — đường đi sẽ được vẽ trực tiếp trên bản đồ.",
+  "rt.noToken": "Chưa cấu hình Mapbox token nên không tải được bản đồ.",
+  "rt.noGeo": "Thiết bị không hỗ trợ định vị.",
+  "rt.denied": "Bạn đã từ chối quyền truy cập vị trí.",
+  "rt.geoError": "Không lấy được vị trí. Hãy thử lại ngoài trời.",
 };
 
 const en: Dict = {
@@ -579,6 +594,8 @@ const en: Dict = {
   "plugins.flappy-bird.description": "Flap through the pipes — score points and beat your best.",
   "plugins.tower.name": "Tower Stack",
   "plugins.tower.description": "Drop blocks dead-straight to build the tallest tower.",
+  "plugins.route-tracker.name": "Route Tracker",
+  "plugins.route-tracker.description": "Record the path you walk on a live map (needs GPS + internet).",
 
   // Coin & Dice
   "cd.tabCoin": "Coin",
@@ -652,6 +669,19 @@ const en: Dict = {
   "tw.newBest": "New best!",
   "tw.restart": "Play again",
   "tw.howto": "Press Space or tap to drop the block — line it up as straight as you can.",
+
+  // Route Tracker
+  "rt.start": "Start tracking",
+  "rt.stop": "Stop",
+  "rt.clear": "Clear route",
+  "rt.distance": "Distance",
+  "rt.duration": "Duration",
+  "rt.points": "Points",
+  "rt.howto": "Turn on location and move — your path is drawn live on the map.",
+  "rt.noToken": "No Mapbox token configured, so the map can't load.",
+  "rt.noGeo": "This device doesn't support geolocation.",
+  "rt.denied": "Location permission was denied.",
+  "rt.geoError": "Couldn't get your location. Try again outdoors.",
 };
 
 export const dictionaries: Record<Locale, Dict> = { vi, en };

@@ -25,6 +25,7 @@ import "@/plugins/notes";
 import "@/plugins/unit-converter";
 import "@/plugins/flappy-bird";
 import "@/plugins/tower";
+import "@/plugins/route-tracker";
 
 /** Imported for its side effects only. */
 export const PLUGINS_REGISTERED = true;

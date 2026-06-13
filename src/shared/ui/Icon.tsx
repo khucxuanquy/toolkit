@@ -61,6 +61,11 @@ import {
   LockOpen,
   Bird,
   Blocks,
+  Route,
+  MapPin,
+  Navigation,
+  LocateFixed,
+  Square,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/shared/utils/cn";
@@ -132,6 +137,11 @@ export const ICONS = {
   LockOpen,
   Bird,
   Blocks,
+  Route,
+  MapPin,
+  Navigation,
+  LocateFixed,
+  Square,
 } satisfies Record<string, LucideIcon>;
 
 export type IconName = keyof typeof ICONS;

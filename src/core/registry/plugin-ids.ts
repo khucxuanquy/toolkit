@@ -14,6 +14,7 @@ import { manifest as notes } from "@/plugins/notes/manifest";
 import { manifest as unitConverter } from "@/plugins/unit-converter/manifest";
 import { manifest as flappyBird } from "@/plugins/flappy-bird/manifest";
 import { manifest as tower } from "@/plugins/tower/manifest";
+import { manifest as routeTracker } from "@/plugins/route-tracker/manifest";
 
 /**
  * Plugin ids known at build time. Used by `generateStaticParams` so the static
@@ -39,6 +40,7 @@ const MANIFESTS = [
   unitConverter,
   flappyBird,
   tower,
+  routeTracker,
 ];
 
 export const PLUGIN_IDS: string[] = MANIFESTS.map((m) => m.id);
