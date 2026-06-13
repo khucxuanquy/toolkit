@@ -3,22 +3,19 @@ import { fileURLToPath } from "node:url";
 import { dirname } from "node:path";
 
 const nextConfig: NextConfig = {
+  // Static export → emits an `out/` folder of HTML/CSS/JS for S3 + CloudFront.
+  output: "export",
+  // Each route becomes a folder with index.html (e.g. /login/index.html), which
+  // S3 static-website hosting / a CloudFront rewrite can serve directly.
+  trailingSlash: true,
+  // No Next image server in a static export.
+  images: { unoptimized: true },
   // Pin the workspace root so the stray parent lockfile doesn't confuse Turbopack.
   turbopack: {
     root: dirname(fileURLToPath(import.meta.url)),
   },
-  // The service worker must be served with no caching so updates are picked up.
-  async headers() {
-    return [
-      {
-        source: "/sw.js",
-        headers: [
-          { key: "Cache-Control", value: "public, max-age=0, must-revalidate" },
-          { key: "Service-Worker-Allowed", value: "/" },
-        ],
-      },
-    ];
-  },
+  // NOTE: custom headers() / redirects() are unsupported by `output: export`.
+  // The service-worker cache-control header is configured on CloudFront/S3 instead.
 };
 
 export default nextConfig;

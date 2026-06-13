@@ -2,6 +2,9 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
+// Registering here (a client component) ensures the registry is populated both
+// during the static prerender and on the client — including deep links.
+import "@/core/registry/register-plugins";
 import { getPlugin } from "@/core/registry/registry";
 import { usePlatformStore } from "@/core/services/platform-store";
 import { useTranslation, localizePlugin } from "@/core/i18n/useTranslation";

@@ -1,5 +1,8 @@
 import type { MetadataRoute } from "next";
 
+// Emit the manifest as a static file during `output: export`.
+export const dynamic = "force-static";
+
 /** Served at /manifest.webmanifest. */
 export default function manifest(): MetadataRoute.Manifest {
   return {
