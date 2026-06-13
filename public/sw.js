@@ -1,19 +1,25 @@
-/* OfflineKit service worker — hand-written so it works with Next.js 16 +
- * Turbopack (which doesn't run webpack-based PWA plugins). Strategy:
- *   - Navigations: network-first, fall back to cached page, then /offline.
- *   - Static assets (_next, icons, scripts, styles, fonts, images):
- *     stale-while-revalidate.
- * Bump CACHE_VERSION to invalidate old caches on deploy.
+/* OfflineKit / Quy's Toolkit service worker — hand-written (Next 16 + Turbopack
+ * static export). For true offline support the ENTIRE build output is precached
+ * at install time. `scripts/build-sw.mjs` runs after `next build` and injects
+ * the file list + a content hash below (the placeholders are replaced in the
+ * deployed `out/sw.js`; in dev they stay inert and the SW isn't registered).
  */
-const CACHE_VERSION = "quy-toolkit-v1";
-const PRECACHE_URLS = ["/", "/offline", "/manifest.webmanifest", "/icons/icon.svg"];
+const CACHE_VERSION = "quy-toolkit-__BUILD_ID__";
+
+// Replaced at build with every file in out/ (HTML, _next chunks, RSC .txt,
+// icons, manifest…). Empty in dev.
+const PRECACHE_ASSETS = [];
+
+// Minimal fallback list so the SW still does something if the build step is skipped.
+const CORE_URLS = ["/", "/offline", "/manifest.webmanifest"];
 
 self.addEventListener("install", (event) => {
   self.skipWaiting();
+  const urls = [...new Set([...CORE_URLS, ...PRECACHE_ASSETS])];
   event.waitUntil(
     caches.open(CACHE_VERSION).then((cache) =>
       // Tolerate individual failures so install never rejects.
-      Promise.allSettled(PRECACHE_URLS.map((url) => cache.add(url))),
+      Promise.allSettled(urls.map((url) => cache.add(url))),
     ),
   );
 });
@@ -39,7 +45,8 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
 
-  // App navigations: network-first with offline fallback.
+  // App navigations: network-first (fresh when online), fall back to the cached
+  // page, then the cached /offline page.
   if (request.mode === "navigate") {
     event.respondWith(
       (async () => {
@@ -49,33 +56,34 @@ self.addEventListener("fetch", (event) => {
           cache.put(request, fresh.clone());
           return fresh;
         } catch {
-          const cached = await caches.match(request);
-          return cached || (await caches.match("/offline")) || Response.error();
+          const cache = await caches.open(CACHE_VERSION);
+          return (
+            (await cache.match(request)) ||
+            (await cache.match(url.pathname)) ||
+            (await cache.match("/offline")) ||
+            Response.error()
+          );
         }
       })(),
     );
     return;
   }
 
-  // Static assets: stale-while-revalidate.
-  const isAsset =
-    url.pathname.startsWith("/_next/") ||
-    url.pathname.startsWith("/icons/") ||
-    ["style", "script", "image", "font", "manifest"].includes(request.destination);
-
-  if (isAsset) {
-    event.respondWith(
-      (async () => {
-        const cache = await caches.open(CACHE_VERSION);
-        const cached = await cache.match(request);
-        const network = fetch(request)
-          .then((res) => {
-            if (res && res.status === 200) cache.put(request, res.clone());
-            return res;
-          })
-          .catch(() => cached);
-        return cached || network;
-      })(),
-    );
-  }
+  // Everything else same-origin (JS/CSS chunks, lazy plugin code, RSC .txt,
+  // icons, fonts…): cache-first, then network (and cache it). This is what makes
+  // already-precached plugin pages work fully offline.
+  event.respondWith(
+    (async () => {
+      const cache = await caches.open(CACHE_VERSION);
+      const cached = await cache.match(request);
+      if (cached) return cached;
+      try {
+        const fresh = await fetch(request);
+        if (fresh && fresh.status === 200) cache.put(request, fresh.clone());
+        return fresh;
+      } catch {
+        return cached || Response.error();
+      }
+    })(),
+  );
 });
