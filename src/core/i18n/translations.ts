@@ -144,6 +144,87 @@ const vi: Dict = {
   "wheel.invalidFile": "Tệp vòng quay không hợp lệ",
   "wheel.defaultName": "Vòng quay của tôi",
   "wheel.close": "Đóng",
+
+  // Plugin metadata (new tools)
+  "plugins.calculator.name": "Máy Tính",
+  "plugins.calculator.description": "Máy tính gọn gàng, đúng thứ tự ưu tiên và có lịch sử.",
+  "plugins.timer.name": "Hẹn Giờ & Bấm Giờ",
+  "plugins.timer.description": "Đếm ngược có chuông báo và đồng hồ bấm giờ ghi vòng.",
+  "plugins.bill-split.name": "Chia Hóa Đơn",
+  "plugins.bill-split.description":
+    "Chia tiền kèm tiền boa theo số người — biết mỗi người trả bao nhiêu.",
+  "plugins.qr-generator.name": "Tạo Mã QR",
+  "plugins.qr-generator.description": "Biến văn bản, liên kết hay WiFi thành mã QR và tải về.",
+  "plugins.password-generator.name": "Tạo Mật Khẩu",
+  "plugins.password-generator.description":
+    "Tạo mật khẩu mạnh ngẫu nhiên — hoàn toàn trên máy bạn.",
+  "plugins.memory.name": "Lật Thẻ Tìm Cặp",
+  "plugins.memory.description": "Lật thẻ tìm cặp giống nhau — phá kỷ lục của bạn.",
+  "plugins.2048.name": "2048",
+  "plugins.2048.description": "Trượt ô, gộp số giống nhau, chạm mốc 2048.",
+
+  // Calculator
+  "calc.history": "Lịch sử",
+  "calc.clear": "Xóa",
+  "calc.noHistory": "Chưa có phép tính nào.",
+
+  // Timer & Stopwatch
+  "timer.tabTimer": "Hẹn giờ",
+  "timer.tabStopwatch": "Bấm giờ",
+  "timer.start": "Bắt đầu",
+  "timer.pause": "Tạm dừng",
+  "timer.resume": "Tiếp tục",
+  "timer.reset": "Đặt lại",
+  "timer.lap": "Vòng",
+  "timer.minutes": "Phút",
+  "timer.seconds": "Giây",
+
+  // Bill splitter
+  "bill.amount": "Số tiền hóa đơn",
+  "bill.tip": "Tiền boa",
+  "bill.people": "Số người",
+  "bill.roundUp": "Làm tròn lên (nghìn)",
+  "bill.perPerson": "Mỗi người trả",
+  "bill.tipAmount": "Tiền boa",
+  "bill.total": "Tổng cộng",
+
+  // QR generator
+  "qr.label": "Nội dung",
+  "qr.placeholder": "Nhập văn bản, liên kết…",
+  "qr.download": "Tải PNG",
+  "qr.empty": "Nhập nội dung để tạo mã QR.",
+
+  // Password generator
+  "pw.length": "Độ dài",
+  "pw.upper": "Chữ HOA",
+  "pw.lower": "Chữ thường",
+  "pw.numbers": "Chữ số",
+  "pw.symbols": "Ký hiệu",
+  "pw.generate": "Tạo mới",
+  "pw.copy": "Sao chép",
+  "pw.copied": "Đã sao chép mật khẩu",
+  "pw.weak": "Yếu",
+  "pw.fair": "Trung bình",
+  "pw.strong": "Mạnh",
+  "pw.veryStrong": "Rất mạnh",
+
+  // Memory
+  "mem.easy": "Dễ",
+  "mem.hard": "Khó",
+  "mem.new": "Ván mới",
+  "mem.moves": "Lượt",
+  "mem.best": "Kỷ lục",
+  "mem.hidden": "Thẻ úp",
+  "mem.won": "Hoàn thành trong {moves} lượt!",
+
+  // 2048
+  "g2048.score": "Điểm",
+  "g2048.best": "Kỷ lục",
+  "g2048.new": "Ván mới",
+  "g2048.won": "Bạn đạt 2048!",
+  "g2048.continue": "Chơi tiếp",
+  "g2048.over": "Hết nước đi!",
+  "g2048.howto": "Dùng phím mũi tên hoặc vuốt để trượt ô.",
 };
 
 const en: Dict = {
@@ -272,6 +353,86 @@ const en: Dict = {
   "wheel.invalidFile": "Invalid wheel file",
   "wheel.defaultName": "My Wheel",
   "wheel.close": "Close",
+
+  // Plugin metadata (new tools)
+  "plugins.calculator.name": "Calculator",
+  "plugins.calculator.description": "A clean calculator with order of operations and history.",
+  "plugins.timer.name": "Timer & Stopwatch",
+  "plugins.timer.description": "Countdown timer with alarm and a lap stopwatch.",
+  "plugins.bill-split.name": "Bill Splitter",
+  "plugins.bill-split.description": "Split a bill with tip across people — see what each owes.",
+  "plugins.qr-generator.name": "QR Generator",
+  "plugins.qr-generator.description": "Turn any text, link or WiFi into a QR code and download it.",
+  "plugins.password-generator.name": "Password Generator",
+  "plugins.password-generator.description":
+    "Create strong random passwords — fully on your device.",
+  "plugins.memory.name": "Memory Match",
+  "plugins.memory.description": "Flip cards to find matching pairs — beat your best score.",
+  "plugins.2048.name": "2048",
+  "plugins.2048.description": "Slide tiles, merge matching numbers, and reach 2048.",
+
+  // Calculator
+  "calc.history": "History",
+  "calc.clear": "Clear",
+  "calc.noHistory": "No calculations yet.",
+
+  // Timer & Stopwatch
+  "timer.tabTimer": "Timer",
+  "timer.tabStopwatch": "Stopwatch",
+  "timer.start": "Start",
+  "timer.pause": "Pause",
+  "timer.resume": "Resume",
+  "timer.reset": "Reset",
+  "timer.lap": "Lap",
+  "timer.minutes": "Minutes",
+  "timer.seconds": "Seconds",
+
+  // Bill splitter
+  "bill.amount": "Bill amount",
+  "bill.tip": "Tip",
+  "bill.people": "People",
+  "bill.roundUp": "Round up (thousands)",
+  "bill.perPerson": "Each person pays",
+  "bill.tipAmount": "Tip",
+  "bill.total": "Total",
+
+  // QR generator
+  "qr.label": "Content",
+  "qr.placeholder": "Enter text, a link…",
+  "qr.download": "Download PNG",
+  "qr.empty": "Enter content to make a QR code.",
+
+  // Password generator
+  "pw.length": "Length",
+  "pw.upper": "Uppercase",
+  "pw.lower": "Lowercase",
+  "pw.numbers": "Numbers",
+  "pw.symbols": "Symbols",
+  "pw.generate": "Generate",
+  "pw.copy": "Copy",
+  "pw.copied": "Password copied",
+  "pw.weak": "Weak",
+  "pw.fair": "Fair",
+  "pw.strong": "Strong",
+  "pw.veryStrong": "Very strong",
+
+  // Memory
+  "mem.easy": "Easy",
+  "mem.hard": "Hard",
+  "mem.new": "New game",
+  "mem.moves": "Moves",
+  "mem.best": "Best",
+  "mem.hidden": "Hidden card",
+  "mem.won": "Done in {moves} moves!",
+
+  // 2048
+  "g2048.score": "Score",
+  "g2048.best": "Best",
+  "g2048.new": "New game",
+  "g2048.won": "You reached 2048!",
+  "g2048.continue": "Keep going",
+  "g2048.over": "Game over!",
+  "g2048.howto": "Use arrow keys or swipe to slide tiles.",
 };
 
 export const dictionaries: Record<Locale, Dict> = { vi, en };

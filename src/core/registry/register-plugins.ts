@@ -11,6 +11,13 @@
  */
 import "@/plugins/tic-tac-toe";
 import "@/plugins/wheel-spinner";
+import "@/plugins/calculator";
+import "@/plugins/timer";
+import "@/plugins/bill-split";
+import "@/plugins/qr-generator";
+import "@/plugins/password-generator";
+import "@/plugins/memory";
+import "@/plugins/2048";
 
 /** Imported for its side effects only. */
 export const PLUGINS_REGISTERED = true;

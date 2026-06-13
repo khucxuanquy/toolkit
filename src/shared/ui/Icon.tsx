@@ -52,6 +52,10 @@ import {
   Lock,
   Eye,
   EyeOff,
+  Copy,
+  Pause,
+  Flag,
+  Minus,
   type LucideIcon,
 } from "lucide-react";
 
@@ -113,6 +117,10 @@ export const ICONS = {
   Lock,
   Eye,
   EyeOff,
+  Copy,
+  Pause,
+  Flag,
+  Minus,
 } satisfies Record<string, LucideIcon>;
 
 export type IconName = keyof typeof ICONS;

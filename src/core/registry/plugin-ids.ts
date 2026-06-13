@@ -1,5 +1,12 @@
 import { manifest as ticTacToe } from "@/plugins/tic-tac-toe/manifest";
 import { manifest as wheelSpinner } from "@/plugins/wheel-spinner/manifest";
+import { manifest as calculator } from "@/plugins/calculator/manifest";
+import { manifest as timer } from "@/plugins/timer/manifest";
+import { manifest as billSplit } from "@/plugins/bill-split/manifest";
+import { manifest as qrGenerator } from "@/plugins/qr-generator/manifest";
+import { manifest as passwordGenerator } from "@/plugins/password-generator/manifest";
+import { manifest as memory } from "@/plugins/memory/manifest";
+import { manifest as game2048 } from "@/plugins/2048/manifest";
 
 /**
  * Plugin ids known at build time. Used by `generateStaticParams` so the static
@@ -8,4 +15,14 @@ import { manifest as wheelSpinner } from "@/plugins/wheel-spinner/manifest";
  * Importing the manifests (plain data, no "use client") keeps this server-safe.
  * When adding a new plugin, include its manifest id here.
  */
-export const PLUGIN_IDS: string[] = [ticTacToe.id, wheelSpinner.id];
+export const PLUGIN_IDS: string[] = [
+  ticTacToe.id,
+  wheelSpinner.id,
+  calculator.id,
+  timer.id,
+  billSplit.id,
+  qrGenerator.id,
+  passwordGenerator.id,
+  memory.id,
+  game2048.id,
+];
