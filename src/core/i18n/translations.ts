@@ -239,6 +239,8 @@ const vi: Dict = {
   "plugins.notes.description": "Ghi chú nhanh, lưu cục bộ trên thiết bị.",
   "plugins.unit-converter.name": "Chuyển Đổi Đơn Vị",
   "plugins.unit-converter.description": "Đổi độ dài, cân nặng, nhiệt độ và tiền tệ.",
+  "plugins.flappy-bird.name": "Chim Vỗ Cánh",
+  "plugins.flappy-bird.description": "Vỗ cánh né ống — ăn điểm và phá kỷ lục.",
 
   // Coin & Dice
   "cd.tabCoin": "Đồng xu",
@@ -291,6 +293,15 @@ const vi: Dict = {
   "uc.to": "Sang",
   "uc.swap": "Đảo chiều",
   "uc.currencyOffline": "Cần kết nối Internet để tải tỉ giá (sau đó sẽ dùng được offline).",
+
+  // Flappy Bird
+  "fb.score": "Điểm",
+  "fb.best": "Kỷ lục",
+  "fb.tapToStart": "Chạm hoặc nhấn Space để bắt đầu",
+  "fb.over": "Thua rồi!",
+  "fb.newBest": "Kỷ lục mới!",
+  "fb.restart": "Chơi lại",
+  "fb.howto": "Chạm màn hình / nhấn Space hoặc ↑ để vỗ cánh.",
 };
 
 const en: Dict = {
@@ -514,6 +525,8 @@ const en: Dict = {
   "plugins.notes.description": "Quick notes, saved locally on your device.",
   "plugins.unit-converter.name": "Unit Converter",
   "plugins.unit-converter.description": "Convert length, weight, temperature and currency.",
+  "plugins.flappy-bird.name": "Flappy Bird",
+  "plugins.flappy-bird.description": "Flap through the pipes — score points and beat your best.",
 
   // Coin & Dice
   "cd.tabCoin": "Coin",
@@ -566,6 +579,15 @@ const en: Dict = {
   "uc.to": "To",
   "uc.swap": "Swap",
   "uc.currencyOffline": "Connect to the internet once to load rates (then it works offline).",
+
+  // Flappy Bird
+  "fb.score": "Score",
+  "fb.best": "Best",
+  "fb.tapToStart": "Tap or press Space to start",
+  "fb.over": "Game over!",
+  "fb.newBest": "New best!",
+  "fb.restart": "Play again",
+  "fb.howto": "Tap the screen / press Space or ↑ to flap.",
 };
 
 export const dictionaries: Record<Locale, Dict> = { vi, en };

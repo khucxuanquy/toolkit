@@ -13,6 +13,7 @@ import { manifest as colorPalette } from "@/plugins/color-palette/manifest";
 import { manifest as todo } from "@/plugins/todo/manifest";
 import { manifest as notes } from "@/plugins/notes/manifest";
 import { manifest as unitConverter } from "@/plugins/unit-converter/manifest";
+import { manifest as flappyBird } from "@/plugins/flappy-bird/manifest";
 
 /**
  * Plugin ids known at build time. Used by `generateStaticParams` so the static
@@ -37,4 +38,5 @@ export const PLUGIN_IDS: string[] = [
   todo.id,
   notes.id,
   unitConverter.id,
+  flappyBird.id,
 ];

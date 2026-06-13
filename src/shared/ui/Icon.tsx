@@ -59,6 +59,7 @@ import {
   Palette,
   ArrowLeftRight,
   LockOpen,
+  Bird,
   type LucideIcon,
 } from "lucide-react";
 
@@ -127,6 +128,7 @@ export const ICONS = {
   Palette,
   ArrowLeftRight,
   LockOpen,
+  Bird,
 } satisfies Record<string, LucideIcon>;
 
 export type IconName = keyof typeof ICONS;

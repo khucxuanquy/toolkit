@@ -24,6 +24,7 @@ import "@/plugins/color-palette";
 import "@/plugins/todo";
 import "@/plugins/notes";
 import "@/plugins/unit-converter";
+import "@/plugins/flappy-bird";
 
 /** Imported for its side effects only. */
 export const PLUGINS_REGISTERED = true;
