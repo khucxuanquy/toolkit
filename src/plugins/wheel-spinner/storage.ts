@@ -15,7 +15,11 @@ const DEFAULT_ENTRIES: WheelEntry[] = ["Alice", "Bob", "Charlie", "Diana", "Evan
   (name) => createEntry(name),
 );
 
-const DEFAULT_SETTINGS: WheelSettings = { removeWinner: false, soundEnabled: true };
+const DEFAULT_SETTINGS: WheelSettings = {
+  removeWinner: false,
+  soundEnabled: true,
+  instantResult: false,
+};
 
 export const wheelStorage = {
   loadEntries: () => store.load<WheelEntry[]>(KEYS.entries, DEFAULT_ENTRIES),

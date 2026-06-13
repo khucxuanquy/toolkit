@@ -3,10 +3,12 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-export type Locale = "vi" | "en";
+export type Locale = "en" | "vi";
 
-export const LOCALES: Locale[] = ["vi", "en"];
-export const LOCALE_LABELS: Record<Locale, string> = { vi: "Tiếng Việt", en: "English" };
+/** Ordered list of available languages. Add new languages here + in dictionaries. */
+export const LOCALES: Locale[] = ["en", "vi"];
+export const LOCALE_LABELS: Record<Locale, string> = { en: "English", vi: "Tiếng Việt" };
+export const LOCALE_FLAGS: Record<Locale, string> = { en: "🇬🇧", vi: "🇻🇳" };
 
 interface LocaleState {
   locale: Locale;
@@ -20,11 +22,11 @@ function applyLang(locale: Locale) {
   if (typeof document !== "undefined") document.documentElement.lang = locale;
 }
 
-/** App language. Defaults to Vietnamese; persisted to localStorage. */
+/** App language. Defaults to English; persisted to localStorage. */
 export const useLocaleStore = create<LocaleState>()(
   persist(
     (set, get) => ({
-      locale: "vi",
+      locale: "en",
       setLocale: (locale) => {
         applyLang(locale);
         set({ locale });

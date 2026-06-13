@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Button, Icon } from "@/shared/ui";
 import { useTranslation } from "@/core/i18n/useTranslation";
+import { sound } from "@/shared/lib/sound";
 import { flappyStorage } from "./storage";
 
 /* ---- Virtual play-field (logical pixels; canvas is scaled to fit) ---- */
@@ -208,6 +209,7 @@ export default function FlappyBirdPage() {
     const p = phaseRef.current;
     if (p === "playing") {
       worldRef.current.birdV = FLAP_V;
+      sound.flap();
     } else {
       // From "ready" or "over": (re)start the run.
       start();
@@ -266,6 +268,7 @@ export default function FlappyBirdPage() {
             p.scored = true;
             w.score += 1;
             setScore(w.score);
+            sound.tick();
           }
         }
         w.pipes = w.pipes.filter((p) => p.x + PIPE_W > -4);
@@ -296,6 +299,7 @@ export default function FlappyBirdPage() {
           draw(ctx, w, "over");
           setBest((b) => Math.max(b, w.score));
           setPhase("over");
+          sound.lose();
           return; // stop scheduling
         }
       }

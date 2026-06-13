@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useDashboardUI } from "@/core/services/dashboard-store";
 import { useTranslation } from "@/core/i18n/useTranslation";
-import { SearchBar, ThemeToggle, LanguageToggle, Icon } from "@/shared/ui";
+import { SearchBar, ThemeToggle, LanguageToggle, SoundToggle, Icon } from "@/shared/ui";
 import { AccountMenu } from "./AccountMenu";
 import { cn } from "@/shared/utils/cn";
 
@@ -56,6 +56,7 @@ export function Navbar() {
           <div className="ml-auto flex shrink-0 items-center gap-2">
             <span className="hidden sm:block">{favoritesButton}</span>
             <LanguageToggle />
+            <SoundToggle />
             <ThemeToggle />
             <AccountMenu />
           </div>

@@ -3,6 +3,7 @@
 import { useEffect, useReducer, useRef } from "react";
 import { Button, Icon } from "@/shared/ui";
 import { useTranslation } from "@/core/i18n/useTranslation";
+import { sound } from "@/shared/lib/sound";
 import { cn } from "@/shared/utils/cn";
 import { canMove, move, newBoard, spawn, type Board, type Direction } from "./logic";
 import { game2048Storage } from "./storage";
@@ -95,6 +96,21 @@ export default function Game2048Page() {
   useEffect(() => {
     void game2048Storage.saveBest(state.best);
   }, [state.best]);
+
+  // Soft tick whenever tiles merge (score grows).
+  const prevScore = useRef(0);
+  useEffect(() => {
+    if (state.score > prevScore.current) sound.tick();
+    prevScore.current = state.score;
+  }, [state.score]);
+
+  // Win / game-over chimes.
+  useEffect(() => {
+    if (state.won) sound.win();
+  }, [state.won]);
+  useEffect(() => {
+    if (state.over) sound.lose();
+  }, [state.over]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {

@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { getAllPlugins, getPlugin } from "@/core/registry/registry";
+import { getBadgeCounts } from "@/core/registry/badges";
 import { useDashboardUI } from "@/core/services/dashboard-store";
 import { usePlatformStore } from "@/core/services/platform-store";
 import { useTranslation, localizePlugin } from "@/core/i18n/useTranslation";
@@ -52,15 +53,15 @@ function Section({ title, plugins }: { title: string; plugins: PlatformPlugin[] 
 }
 
 /** A single logo-only tile used in the horizontal "recently used" strip. */
-function RecentIcon({ plugin }: { plugin: PlatformPlugin }) {
+function RecentIcon({ plugin, badge }: { plugin: PlatformPlugin; badge?: number }) {
   const { locale } = useTranslation();
   const { name } = localizePlugin(locale, plugin.id, plugin);
   return (
     <Link
       href={plugin.route}
       title={name}
-      aria-label={name}
-      className="shrink-0 transition-transform hover:-translate-y-0.5"
+      aria-label={badge ? `${name} (${badge})` : name}
+      className="group relative shrink-0 transition-transform hover:-translate-y-0.5"
     >
       <span
         className={cn(
@@ -70,19 +71,38 @@ function RecentIcon({ plugin }: { plugin: PlatformPlugin }) {
       >
         <Icon name={plugin.icon} size={24} />
       </span>
+      {badge ? (
+        <span className="bg-danger ring-background absolute -top-1.5 -right-1.5 flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-xs font-bold text-white ring-2">
+          {badge > 99 ? "99+" : badge}
+        </span>
+      ) : null}
     </Link>
   );
 }
 
 /** Logo-only, single-row strip that scrolls horizontally when it overflows. */
 function RecentRow({ title, plugins }: { title: string; plugins: PlatformPlugin[] }) {
+  const [counts, setCounts] = useState<Record<string, number>>({});
+
+  // Resolve data-count badges (todo tasks, notes, …) once the row is shown.
+  useEffect(() => {
+    let active = true;
+    void getBadgeCounts(plugins.map((p) => p.id)).then((c) => {
+      if (active) setCounts(c);
+    });
+    return () => {
+      active = false;
+    };
+  }, [plugins]);
+
   if (plugins.length === 0) return null;
   return (
     <section className="space-y-3">
       <h2 className="text-muted text-sm font-semibold tracking-wide uppercase">{title}</h2>
-      <div className="-mx-1 flex [scrollbar-width:thin] gap-3 overflow-x-auto px-1 pb-1">
+      {/* pt-2 leaves room for the hover lift + badge so neither gets clipped by overflow. */}
+      <div className="-mx-1 flex [scrollbar-width:thin] gap-3 overflow-x-auto px-1 pt-2 pb-1">
         {plugins.map((p) => (
-          <RecentIcon key={p.id} plugin={p} />
+          <RecentIcon key={p.id} plugin={p} badge={counts[p.id]} />
         ))}
       </div>
     </section>

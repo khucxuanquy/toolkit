@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useReducer } from "react";
+import { sound } from "@/shared/lib/sound";
 import { EMPTY_BOARD, getWinner, MAX_LIFETIME_S, MIN_LIFETIME_S } from "../logic";
 import { ticTacToeStorage, DEFAULT_SCORES, DEFAULT_SETTINGS } from "../storage";
 import type { Board, Player, Scores } from "../types";
@@ -123,6 +124,11 @@ export function useInfinityGame() {
     return () => clearInterval(id);
   }, [gameOver, hasMarks]);
 
+  // Victory chime when a winner appears.
+  useEffect(() => {
+    if (winner) sound.win();
+  }, [winner]);
+
   return {
     board,
     current,
@@ -131,7 +137,11 @@ export function useInfinityGame() {
     lifetimeMs,
     gameOver,
     hydrated,
-    play: (index: number) => dispatch({ type: "PLAY", index, at: Date.now() }),
+    play: (index: number) => {
+      if (winner || board[index]) return;
+      sound.place();
+      dispatch({ type: "PLAY", index, at: Date.now() });
+    },
     restart: () => dispatch({ type: "RESTART" }),
     resetScores: () => dispatch({ type: "RESET_SCORES" }),
     setLifetime: (ms: number) => dispatch({ type: "SET_LIFETIME", ms }),

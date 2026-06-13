@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Button, Icon, Tabs } from "@/shared/ui";
 import { useTranslation } from "@/core/i18n/useTranslation";
+import { sound } from "@/shared/lib/sound";
 import { towerStorage, type BestScores, type Difficulty } from "./storage";
 
 /* ---- Virtual play-field (logical pixels; canvas is scaled to fit) ---- */
@@ -185,6 +186,7 @@ export default function TowerPage() {
         return next;
       });
       setPhase("over");
+      sound.lose();
       return;
     }
 
@@ -204,6 +206,8 @@ export default function TowerPage() {
     const placed: Block = { x: left, w: overlap, hue: m.hue };
     w.blocks.push(placed);
     setScore(w.blocks.length - 1);
+    if (perfect) sound.match();
+    else sound.place();
 
     // Next block enters from the alternating side.
     const fromLeft = w.blocks.length % 2 === 0;

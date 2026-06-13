@@ -19,7 +19,6 @@ import "@/plugins/password-generator";
 import "@/plugins/memory";
 import "@/plugins/2048";
 import "@/plugins/coin-dice";
-import "@/plugins/random-picker";
 import "@/plugins/color-palette";
 import "@/plugins/todo";
 import "@/plugins/notes";

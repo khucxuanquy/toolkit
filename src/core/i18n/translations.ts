@@ -13,6 +13,8 @@ const vi: Dict = {
   "nav.toLight": "Chuyển sang giao diện sáng",
   "nav.toDark": "Chuyển sang giao diện tối",
   "nav.language": "Ngôn ngữ",
+  "nav.soundOn": "Bật âm thanh",
+  "nav.soundOff": "Tắt âm thanh",
 
   // Home
   "home.title": "Bộ công cụ của Quy",
@@ -90,8 +92,7 @@ const vi: Dict = {
   "plugins.tic-tac-toe.name": "Tic Tac Toe Vô Hạn",
   "plugins.tic-tac-toe.description": "Cờ ca-rô 3×3 với các dấu tự biến mất sau vài giây.",
   "plugins.wheel-spinner.name": "Vòng Quay May Mắn",
-  "plugins.wheel-spinner.description":
-    "Quay vòng quay chứa các tên để chọn ngẫu nhiên người thắng.",
+  "plugins.wheel-spinner.description": "Quay vòng quay tên hoặc số để chọn ngẫu nhiên người thắng.",
 
   // Tic Tac Toe (Infinity)
   "ttt.subtitle": "Mỗi dấu sẽ tự biến mất sau {s} giây",
@@ -128,10 +129,14 @@ const vi: Dict = {
   "wheel.savePreset": "Lưu mẫu",
   "wheel.savedWheels": "Vòng quay đã lưu",
   "wheel.deletePreset": "Xóa {name}",
-  "wheel.import": "Nhập",
-  "wheel.export": "Xuất",
+  "wheel.instantResult": "Bỏ hiệu ứng quay (kết quả ngay)",
   "wheel.removeWinnerAfter": "Xóa người thắng sau khi quay",
   "wheel.soundEffects": "Hiệu ứng âm thanh",
+  "wheel.quickNumbers": "Thêm nhanh dãy số",
+  "wheel.quickNumbersHint": "Tạo nhanh các mục 1…N để bốc số.",
+  "wheel.fill": "Thêm dãy số",
+  "wheel.winners": "Người đã thắng",
+  "wheel.clearWinners": "Xoá danh sách",
   "wheel.spin": "Quay",
   "wheel.spinning": "Đang quay…",
   "wheel.spinAria": "Quay vòng quay",
@@ -151,8 +156,7 @@ const vi: Dict = {
   "plugins.timer.name": "Hẹn Giờ & Bấm Giờ",
   "plugins.timer.description": "Đếm ngược có chuông báo và đồng hồ bấm giờ ghi vòng.",
   "plugins.bill-split.name": "Chia Hóa Đơn",
-  "plugins.bill-split.description":
-    "Chia tiền kèm tiền boa theo số người — biết mỗi người trả bao nhiêu.",
+  "plugins.bill-split.description": "Cộng nhiều hóa đơn rồi chia đều theo số người.",
   "plugins.qr-generator.name": "Tạo Mã QR",
   "plugins.qr-generator.description": "Biến văn bản, liên kết hay WiFi thành mã QR và tải về.",
   "plugins.password-generator.name": "Tạo Mật Khẩu",
@@ -180,12 +184,16 @@ const vi: Dict = {
   "timer.seconds": "Giây",
 
   // Bill splitter
-  "bill.amount": "Số tiền hóa đơn",
-  "bill.tip": "Tiền boa",
+  "bill.amount": "Số tiền",
+  "bill.bills": "Hóa đơn",
+  "bill.bill": "Hóa đơn",
+  "bill.billLabel": "Tên hóa đơn",
+  "bill.addBill": "Thêm hóa đơn",
+  "bill.removeBill": "Xóa hóa đơn",
+  "bill.subtotal": "Tạm tính",
   "bill.people": "Số người",
   "bill.roundUp": "Làm tròn lên (nghìn)",
   "bill.perPerson": "Mỗi người trả",
-  "bill.tipAmount": "Tiền boa",
   "bill.total": "Tổng cộng",
 
   // QR generator
@@ -210,12 +218,21 @@ const vi: Dict = {
 
   // Memory
   "mem.easy": "Dễ",
+  "mem.medium": "Vừa",
   "mem.hard": "Khó",
+  "mem.custom": "Tùy chỉnh",
+  "mem.cols": "Cột",
+  "mem.rows": "Hàng",
   "mem.new": "Ván mới",
   "mem.moves": "Lượt",
-  "mem.best": "Kỷ lục",
+  "mem.time": "Thời gian",
+  "mem.bestTime": "KL thời gian",
+  "mem.twoPlayer": "2 người chơi",
+  "mem.player": "Người {n}",
+  "mem.win": "Người {n} thắng!",
+  "mem.draw": "Hòa!",
   "mem.hidden": "Thẻ úp",
-  "mem.won": "Hoàn thành trong {moves} lượt!",
+  "mem.wonTime": "Xong sau {time} ({moves} lượt)!",
 
   // 2048
   "g2048.score": "Điểm",
@@ -324,6 +341,8 @@ const en: Dict = {
   "nav.toLight": "Switch to light mode",
   "nav.toDark": "Switch to dark mode",
   "nav.language": "Language",
+  "nav.soundOn": "Turn sound on",
+  "nav.soundOff": "Turn sound off",
 
   "home.title": "Quy's Toolkit",
   "home.subtitle": "Handy tools & mini-games — for me and my family.",
@@ -393,7 +412,7 @@ const en: Dict = {
   "plugins.tic-tac-toe.description":
     "3×3 noughts & crosses where marks vanish after a few seconds.",
   "plugins.wheel-spinner.name": "Wheel Spinner",
-  "plugins.wheel-spinner.description": "Spin a wheel of names to pick a random winner.",
+  "plugins.wheel-spinner.description": "Spin a wheel of names or numbers to pick a random winner.",
 
   "ttt.subtitle": "Each mark disappears after {s} seconds",
   "ttt.turn": "Turn",
@@ -428,10 +447,14 @@ const en: Dict = {
   "wheel.savePreset": "Save preset",
   "wheel.savedWheels": "Saved wheels",
   "wheel.deletePreset": "Delete {name}",
-  "wheel.import": "Import",
-  "wheel.export": "Export",
+  "wheel.instantResult": "Skip spin animation (instant result)",
   "wheel.removeWinnerAfter": "Remove winner after spin",
   "wheel.soundEffects": "Sound effects",
+  "wheel.quickNumbers": "Quick-add numbers",
+  "wheel.quickNumbersHint": "Fill entries 1…N for drawing numbers.",
+  "wheel.fill": "Add numbers",
+  "wheel.winners": "Past winners",
+  "wheel.clearWinners": "Clear list",
   "wheel.spin": "Spin",
   "wheel.spinning": "Spinning…",
   "wheel.spinAria": "Spin the wheel",
@@ -451,7 +474,7 @@ const en: Dict = {
   "plugins.timer.name": "Timer & Stopwatch",
   "plugins.timer.description": "Countdown timer with alarm and a lap stopwatch.",
   "plugins.bill-split.name": "Bill Splitter",
-  "plugins.bill-split.description": "Split a bill with tip across people — see what each owes.",
+  "plugins.bill-split.description": "Add up multiple bills and split evenly across people.",
   "plugins.qr-generator.name": "QR Generator",
   "plugins.qr-generator.description": "Turn any text, link or WiFi into a QR code and download it.",
   "plugins.password-generator.name": "Password Generator",
@@ -479,12 +502,16 @@ const en: Dict = {
   "timer.seconds": "Seconds",
 
   // Bill splitter
-  "bill.amount": "Bill amount",
-  "bill.tip": "Tip",
+  "bill.amount": "Amount",
+  "bill.bills": "Bills",
+  "bill.bill": "Bill",
+  "bill.billLabel": "Bill name",
+  "bill.addBill": "Add bill",
+  "bill.removeBill": "Remove bill",
+  "bill.subtotal": "Subtotal",
   "bill.people": "People",
   "bill.roundUp": "Round up (thousands)",
   "bill.perPerson": "Each person pays",
-  "bill.tipAmount": "Tip",
   "bill.total": "Total",
 
   // QR generator
@@ -509,12 +536,21 @@ const en: Dict = {
 
   // Memory
   "mem.easy": "Easy",
+  "mem.medium": "Medium",
   "mem.hard": "Hard",
+  "mem.custom": "Custom",
+  "mem.cols": "Cols",
+  "mem.rows": "Rows",
   "mem.new": "New game",
   "mem.moves": "Moves",
-  "mem.best": "Best",
+  "mem.time": "Time",
+  "mem.bestTime": "Best time",
+  "mem.twoPlayer": "2 players",
+  "mem.player": "Player {n}",
+  "mem.win": "Player {n} wins!",
+  "mem.draw": "It's a draw!",
   "mem.hidden": "Hidden card",
-  "mem.won": "Done in {moves} moves!",
+  "mem.wonTime": "Done in {time} ({moves} moves)!",
 
   // 2048
   "g2048.score": "Score",

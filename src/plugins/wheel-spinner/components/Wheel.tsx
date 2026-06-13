@@ -13,6 +13,7 @@ const SPIN_DURATION_MS = 4400;
 interface WheelProps {
   entries: WheelEntry[];
   soundEnabled: boolean;
+  instantResult?: boolean;
   onResult: (winner: WheelEntry) => void;
 }
 
@@ -20,7 +21,7 @@ function truncate(label: string, max = 16): string {
   return label.length > max ? `${label.slice(0, max - 1)}…` : label;
 }
 
-export function Wheel({ entries, soundEnabled, onResult }: WheelProps) {
+export function Wheel({ entries, soundEnabled, instantResult, onResult }: WheelProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rotationRef = useRef(0);
   const rafRef = useRef<number | null>(null);
@@ -103,9 +104,25 @@ export function Wheel({ entries, soundEnabled, onResult }: WheelProps) {
 
   const spin = () => {
     if (spinning || entries.length < 2) return;
-    setSpinning(true);
 
     const winnerIndex = weightedPick(entries);
+
+    // Instant mode: skip the animation, jump to the winner and report it.
+    if (instantResult) {
+      rotationRef.current = targetRotationFor(
+        entries,
+        winnerIndex,
+        rotationRef.current,
+        0,
+        Math.random(),
+      );
+      draw();
+      if (soundEnabled) wheelSound.win();
+      onResult(entries[winnerIndex]);
+      return;
+    }
+
+    setSpinning(true);
     const spins = 5 + Math.floor(Math.random() * 3);
     const target = targetRotationFor(
       entries,

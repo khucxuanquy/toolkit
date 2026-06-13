@@ -7,6 +7,7 @@ export { Input, type InputProps } from "./Input";
 export { LanguageToggle } from "./LanguageToggle";
 export { Modal } from "./Modal";
 export { SearchBar } from "./SearchBar";
+export { SoundToggle } from "./SoundToggle";
 export { Tabs, type TabItem } from "./Tabs";
 export { ThemeToggle } from "./ThemeToggle";
 export { Toaster, useToast } from "./Toast";

@@ -17,6 +17,8 @@ export interface WheelSettings {
   removeWinner: boolean;
   /** Play sound effects while spinning and on win. */
   soundEnabled: boolean;
+  /** Skip the spin animation and reveal the winner instantly. */
+  instantResult: boolean;
 }
 
 /** Shape of an exported `.json` wheel file. */

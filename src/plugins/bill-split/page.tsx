@@ -1,68 +1,93 @@
 "use client";
 
 import { useState } from "react";
-import { Card, CardBody, Input, Icon } from "@/shared/ui";
+import { Card, CardBody, Input, Icon, Button } from "@/shared/ui";
 import { useTranslation } from "@/core/i18n/useTranslation";
+import { sound } from "@/shared/lib/sound";
 import { cn } from "@/shared/utils/cn";
 
-const TIP_PRESETS = [0, 5, 10, 15, 20];
+interface BillItem {
+  id: string;
+  label: string;
+  amount: string;
+}
+
 const fmt = (n: number) => new Intl.NumberFormat("vi-VN").format(Math.round(n));
+let counter = 0;
+const newItem = (): BillItem => ({ id: `b-${++counter}`, label: "", amount: "" });
 
 export default function BillSplitPage() {
   const { t } = useTranslation();
-  const [amount, setAmount] = useState("");
-  const [tip, setTip] = useState(10);
+  const [items, setItems] = useState<BillItem[]>([newItem()]);
   const [people, setPeople] = useState(2);
   const [roundUp, setRoundUp] = useState(true);
 
-  const bill = Math.max(0, parseFloat(amount) || 0);
-  const tipAmount = (bill * tip) / 100;
-  const total = bill + tipAmount;
-  const rawPer = people > 0 ? total / people : 0;
+  const subtotal = items.reduce((sum, it) => sum + Math.max(0, parseFloat(it.amount) || 0), 0);
+  const rawPer = people > 0 ? subtotal / people : 0;
   const perPerson = roundUp ? Math.ceil(rawPer / 1000) * 1000 : rawPer;
+
+  const updateItem = (id: string, change: Partial<BillItem>) =>
+    setItems((list) => list.map((it) => (it.id === id ? { ...it, ...change } : it)));
+  const addItem = () => {
+    sound.click();
+    setItems((list) => [...list, newItem()]);
+  };
+  const removeItem = (id: string) =>
+    setItems((list) => (list.length > 1 ? list.filter((it) => it.id !== id) : list));
 
   return (
     <div className="mx-auto grid max-w-2xl gap-5 md:grid-cols-2">
       {/* Inputs */}
       <Card>
         <CardBody className="space-y-5">
-          <label className="block space-y-1.5">
-            <span className="text-sm font-medium">{t("bill.amount")}</span>
-            <div className="relative">
-              <Input
-                type="number"
-                inputMode="decimal"
-                min={0}
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                placeholder="0"
-                className="pr-8 text-lg"
-              />
-              <span className="text-muted absolute top-1/2 right-3 -translate-y-1/2 text-sm">
-                đ
-              </span>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium">{t("bill.bills")}</span>
+              <Button variant="ghost" size="sm" onClick={addItem}>
+                <Icon name="Plus" size={15} /> {t("bill.addBill")}
+              </Button>
             </div>
-          </label>
 
-          <div className="space-y-1.5">
-            <span className="text-sm font-medium">
-              {t("bill.tip")} ({tip}%)
-            </span>
-            <div className="flex flex-wrap gap-2">
-              {TIP_PRESETS.map((p) => (
-                <button
-                  key={p}
-                  onClick={() => setTip(p)}
-                  className={cn(
-                    "rounded-lg px-3 py-1.5 text-sm font-medium transition-colors",
-                    tip === p
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-surface-2 hover:bg-border",
-                  )}
-                >
-                  {p}%
-                </button>
+            <div className="space-y-2">
+              {items.map((it, i) => (
+                <div key={it.id} className="flex gap-2">
+                  <Input
+                    value={it.label}
+                    onChange={(e) => updateItem(it.id, { label: e.target.value })}
+                    placeholder={`${t("bill.bill")} ${i + 1}`}
+                    className="w-28 shrink-0"
+                    aria-label={t("bill.billLabel")}
+                  />
+                  <div className="relative flex-1">
+                    <Input
+                      type="number"
+                      inputMode="decimal"
+                      min={0}
+                      value={it.amount}
+                      onChange={(e) => updateItem(it.id, { amount: e.target.value })}
+                      placeholder="0"
+                      className="pr-8 text-right"
+                      aria-label={t("bill.amount")}
+                    />
+                    <span className="text-muted absolute top-1/2 right-3 -translate-y-1/2 text-sm">
+                      đ
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => removeItem(it.id)}
+                    disabled={items.length <= 1}
+                    aria-label={t("bill.removeBill")}
+                    className="text-muted hover:bg-surface-2 hover:text-danger flex h-10 w-10 shrink-0 items-center justify-center rounded-lg disabled:opacity-30"
+                  >
+                    <Icon name="Trash2" size={16} />
+                  </button>
+                </div>
               ))}
+            </div>
+
+            <div className="border-border flex justify-between border-t pt-3 text-sm">
+              <span className="text-muted">{t("bill.subtotal")}</span>
+              <span className="font-bold tabular-nums">{fmt(subtotal)} đ</span>
             </div>
           </div>
 
@@ -121,8 +146,8 @@ export default function BillSplitPage() {
             </div>
           </div>
           <div className="border-border space-y-2 border-t pt-4 text-sm">
-            <Row label={t("bill.tipAmount")} value={`${fmt(tipAmount)} đ`} />
-            <Row label={t("bill.total")} value={`${fmt(total)} đ`} bold />
+            <Row label={t("bill.bills")} value={`${items.length}`} />
+            <Row label={t("bill.total")} value={`${fmt(subtotal)} đ`} bold />
           </div>
         </CardBody>
       </Card>

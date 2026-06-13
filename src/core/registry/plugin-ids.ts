@@ -8,7 +8,6 @@ import { manifest as passwordGenerator } from "@/plugins/password-generator/mani
 import { manifest as memory } from "@/plugins/memory/manifest";
 import { manifest as game2048 } from "@/plugins/2048/manifest";
 import { manifest as coinDice } from "@/plugins/coin-dice/manifest";
-import { manifest as randomPicker } from "@/plugins/random-picker/manifest";
 import { manifest as colorPalette } from "@/plugins/color-palette/manifest";
 import { manifest as todo } from "@/plugins/todo/manifest";
 import { manifest as notes } from "@/plugins/notes/manifest";
@@ -23,22 +22,28 @@ import { manifest as tower } from "@/plugins/tower/manifest";
  * Importing the manifests (plain data, no "use client") keeps this server-safe.
  * When adding a new plugin, include its manifest id here.
  */
-export const PLUGIN_IDS: string[] = [
-  ticTacToe.id,
-  wheelSpinner.id,
-  calculator.id,
-  timer.id,
-  billSplit.id,
-  qrGenerator.id,
-  passwordGenerator.id,
-  memory.id,
-  game2048.id,
-  coinDice.id,
-  randomPicker.id,
-  colorPalette.id,
-  todo.id,
-  notes.id,
-  unitConverter.id,
-  flappyBird.id,
-  tower.id,
+const MANIFESTS = [
+  ticTacToe,
+  wheelSpinner,
+  calculator,
+  timer,
+  billSplit,
+  qrGenerator,
+  passwordGenerator,
+  memory,
+  game2048,
+  coinDice,
+  colorPalette,
+  todo,
+  notes,
+  unitConverter,
+  flappyBird,
+  tower,
 ];
+
+export const PLUGIN_IDS: string[] = MANIFESTS.map((m) => m.id);
+
+/** id → display name, for build-time `generateMetadata` (per-tool tab titles). */
+export const PLUGIN_NAMES: Record<string, string> = Object.fromEntries(
+  MANIFESTS.map((m) => [m.id, m.name]),
+);

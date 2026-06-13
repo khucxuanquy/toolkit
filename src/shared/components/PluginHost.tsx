@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import Link from "next/link";
 // Registering here (a client component) ensures the registry is populated both
 // during the static prerender and on the client — including deep links.
@@ -15,10 +15,51 @@ export function PluginHost({ pluginId }: { pluginId: string }) {
   const plugin = getPlugin(pluginId);
   const markUsed = usePlatformStore((s) => s.markUsed);
   const { t, locale } = useTranslation();
+  const iconRef = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
     if (plugin) markUsed(plugin.id);
   }, [plugin, markUsed]);
+
+  // Swap the favicon to one drawn from the tool's own icon while it's open.
+  // (The tab *title* is set per-route via generateMetadata.) Restored on leave.
+  useEffect(() => {
+    if (!plugin) return;
+
+    let link = document.querySelector<HTMLLinkElement>('link[rel~="icon"]');
+    const created = !link;
+    const prevHref = link?.getAttribute("href") ?? null;
+    const prevType = link?.getAttribute("type") ?? null;
+    if (!link) {
+      link = document.createElement("link");
+      link.rel = "icon";
+      document.head.appendChild(link);
+    }
+
+    const svg = iconRef.current?.querySelector("svg");
+    if (svg) {
+      const favicon =
+        `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">` +
+        `<defs><linearGradient id="fg" x1="0" y1="0" x2="1" y2="1">` +
+        `<stop offset="0" stop-color="#6366f1"/><stop offset="1" stop-color="#ec4899"/>` +
+        `</linearGradient></defs>` +
+        `<rect width="32" height="32" rx="7" fill="url(#fg)"/>` +
+        `<g transform="translate(6 6) scale(0.8333)" fill="none" stroke="#ffffff" ` +
+        `stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${svg.innerHTML}</g></svg>`;
+      link.type = "image/svg+xml";
+      link.href = `data:image/svg+xml,${encodeURIComponent(favicon)}`;
+    }
+
+    return () => {
+      if (created) {
+        link?.remove();
+      } else if (link) {
+        if (prevHref !== null) link.setAttribute("href", prevHref);
+        if (prevType !== null) link.setAttribute("type", prevType);
+        else link.removeAttribute("type");
+      }
+    };
+  }, [plugin]);
 
   if (!plugin) {
     return (
@@ -52,6 +93,7 @@ export function PluginHost({ pluginId }: { pluginId: string }) {
           <Icon name="Home" size={18} />
         </Link>
         <span
+          ref={iconRef}
           className={`flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br text-white ${plugin.accent ?? "from-primary to-accent"}`}
         >
           <Icon name={plugin.icon} size={20} />
