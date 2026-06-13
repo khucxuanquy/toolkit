@@ -225,6 +225,72 @@ const vi: Dict = {
   "g2048.continue": "Chơi tiếp",
   "g2048.over": "Hết nước đi!",
   "g2048.howto": "Dùng phím mũi tên hoặc vuốt để trượt ô.",
+
+  // Plugin metadata (batch 2)
+  "plugins.coin-dice.name": "Đồng Xu & Xúc Xắc",
+  "plugins.coin-dice.description": "Tung đồng xu hoặc gieo xúc xắc để quyết định nhanh.",
+  "plugins.random-picker.name": "Chọn Ngẫu Nhiên",
+  "plugins.random-picker.description": "Bốc số ngẫu nhiên trong khoảng, hoặc chọn từ danh sách.",
+  "plugins.color-palette.name": "Bảng Màu",
+  "plugins.color-palette.description": "Tạo bảng màu, khoá màu ưng ý và sao chép mã hex.",
+  "plugins.todo.name": "Việc Cần Làm",
+  "plugins.todo.description": "Danh sách việc cần làm, lưu ngay trên máy.",
+  "plugins.notes.name": "Ghi Chú",
+  "plugins.notes.description": "Ghi chú nhanh, lưu cục bộ trên thiết bị.",
+  "plugins.unit-converter.name": "Chuyển Đổi Đơn Vị",
+  "plugins.unit-converter.description": "Đổi độ dài, cân nặng, nhiệt độ và tiền tệ.",
+
+  // Coin & Dice
+  "cd.tabCoin": "Đồng xu",
+  "cd.tabDice": "Xúc xắc",
+  "cd.flip": "Tung",
+  "cd.roll": "Gieo",
+  "cd.heads": "Ngửa",
+  "cd.tails": "Sấp",
+  "cd.diceCount": "viên",
+  "cd.total": "Tổng",
+
+  // Random picker
+  "rp.tabNumber": "Bốc số",
+  "rp.tabList": "Danh sách",
+  "rp.min": "Nhỏ nhất",
+  "rp.max": "Lớn nhất",
+  "rp.draw": "Bốc số",
+  "rp.result": "Kết quả",
+  "rp.itemsPlaceholder": "Mỗi dòng một mục…",
+  "rp.pick": "Chọn",
+
+  // Color palette
+  "cp.generate": "Tạo bảng màu",
+  "cp.copied": "Đã sao chép {hex}",
+  "cp.lock": "Khoá màu",
+  "cp.hint": "Nhấn phím cách để tạo lại; bấm vào mã để sao chép.",
+
+  // To-do
+  "todo.placeholder": "Thêm việc cần làm…",
+  "todo.add": "Thêm",
+  "todo.remaining": "Còn lại {n}",
+  "todo.clearDone": "Xoá việc đã xong",
+  "todo.empty": "Chưa có việc nào.",
+
+  // Notes
+  "notes.new": "Ghi chú mới",
+  "notes.title": "Tiêu đề",
+  "notes.body": "Nội dung…",
+  "notes.empty": "Chọn hoặc tạo một ghi chú.",
+  "notes.untitled": "(Không tiêu đề)",
+  "notes.delete": "Xoá",
+  "notes.noNotes": "Chưa có ghi chú.",
+
+  // Unit converter
+  "uc.length": "Độ dài",
+  "uc.weight": "Cân nặng",
+  "uc.temperature": "Nhiệt độ",
+  "uc.currency": "Tiền tệ",
+  "uc.from": "Từ",
+  "uc.to": "Sang",
+  "uc.swap": "Đảo chiều",
+  "uc.currencyOffline": "Cần kết nối Internet để tải tỉ giá (sau đó sẽ dùng được offline).",
 };
 
 const en: Dict = {
@@ -433,6 +499,73 @@ const en: Dict = {
   "g2048.continue": "Keep going",
   "g2048.over": "Game over!",
   "g2048.howto": "Use arrow keys or swipe to slide tiles.",
+
+  // Plugin metadata (batch 2)
+  "plugins.coin-dice.name": "Coin & Dice",
+  "plugins.coin-dice.description": "Flip a coin or roll dice to make a quick decision.",
+  "plugins.random-picker.name": "Random Picker",
+  "plugins.random-picker.description": "Draw a random number in a range, or pick from a list.",
+  "plugins.color-palette.name": "Color Palette",
+  "plugins.color-palette.description":
+    "Generate color palettes, lock favourites and copy hex codes.",
+  "plugins.todo.name": "To-do List",
+  "plugins.todo.description": "A simple checklist that saves on your device.",
+  "plugins.notes.name": "Notes",
+  "plugins.notes.description": "Quick notes, saved locally on your device.",
+  "plugins.unit-converter.name": "Unit Converter",
+  "plugins.unit-converter.description": "Convert length, weight, temperature and currency.",
+
+  // Coin & Dice
+  "cd.tabCoin": "Coin",
+  "cd.tabDice": "Dice",
+  "cd.flip": "Flip",
+  "cd.roll": "Roll",
+  "cd.heads": "Heads",
+  "cd.tails": "Tails",
+  "cd.diceCount": "dice",
+  "cd.total": "Total",
+
+  // Random picker
+  "rp.tabNumber": "Number",
+  "rp.tabList": "List",
+  "rp.min": "Min",
+  "rp.max": "Max",
+  "rp.draw": "Draw",
+  "rp.result": "Result",
+  "rp.itemsPlaceholder": "One item per line…",
+  "rp.pick": "Pick",
+
+  // Color palette
+  "cp.generate": "Generate",
+  "cp.copied": "Copied {hex}",
+  "cp.lock": "Lock colour",
+  "cp.hint": "Press Space to regenerate; click a code to copy.",
+
+  // To-do
+  "todo.placeholder": "Add a task…",
+  "todo.add": "Add",
+  "todo.remaining": "{n} left",
+  "todo.clearDone": "Clear done",
+  "todo.empty": "No tasks yet.",
+
+  // Notes
+  "notes.new": "New note",
+  "notes.title": "Title",
+  "notes.body": "Write something…",
+  "notes.empty": "Select or create a note.",
+  "notes.untitled": "(Untitled)",
+  "notes.delete": "Delete",
+  "notes.noNotes": "No notes yet.",
+
+  // Unit converter
+  "uc.length": "Length",
+  "uc.weight": "Weight",
+  "uc.temperature": "Temp",
+  "uc.currency": "Currency",
+  "uc.from": "From",
+  "uc.to": "To",
+  "uc.swap": "Swap",
+  "uc.currencyOffline": "Connect to the internet once to load rates (then it works offline).",
 };
 
 export const dictionaries: Record<Locale, Dict> = { vi, en };

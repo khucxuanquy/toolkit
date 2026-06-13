@@ -18,6 +18,12 @@ import "@/plugins/qr-generator";
 import "@/plugins/password-generator";
 import "@/plugins/memory";
 import "@/plugins/2048";
+import "@/plugins/coin-dice";
+import "@/plugins/random-picker";
+import "@/plugins/color-palette";
+import "@/plugins/todo";
+import "@/plugins/notes";
+import "@/plugins/unit-converter";
 
 /** Imported for its side effects only. */
 export const PLUGINS_REGISTERED = true;

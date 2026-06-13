@@ -56,6 +56,9 @@ import {
   Pause,
   Flag,
   Minus,
+  Palette,
+  ArrowLeftRight,
+  LockOpen,
   type LucideIcon,
 } from "lucide-react";
 
@@ -121,6 +124,9 @@ export const ICONS = {
   Pause,
   Flag,
   Minus,
+  Palette,
+  ArrowLeftRight,
+  LockOpen,
 } satisfies Record<string, LucideIcon>;
 
 export type IconName = keyof typeof ICONS;
