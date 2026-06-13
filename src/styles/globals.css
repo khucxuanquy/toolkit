@@ -1,0 +1,128 @@
+@import "tailwindcss";
+
+/*
+ * Class-based dark mode. The platform toggles the `dark` class on <html>.
+ * Tailwind v4 needs an explicit custom variant for this.
+ */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ---------------------------------------------------------------------------
+ * Design tokens. Semantic colors are declared as CSS variables so they can be
+ * swapped at runtime (light/dark) without rebuilding utility classes.
+ * ------------------------------------------------------------------------- */
+:root {
+  --background: #f6f7fb;
+  --surface: #ffffff;
+  --surface-2: #f1f3f9;
+  --border: #e4e7ee;
+  --foreground: #0f1729;
+  --muted: #64748b;
+  --primary: #6366f1;
+  --primary-hover: #5457e5;
+  --primary-foreground: #ffffff;
+  --accent: #ec4899;
+  --success: #16a34a;
+  --danger: #e11d48;
+  --warning: #f59e0b;
+  --ring: #818cf8;
+  --shadow-color: 220 40% 30%;
+}
+
+.dark {
+  --background: #0a0e1a;
+  --surface: #121829;
+  --surface-2: #1b2236;
+  --border: #283150;
+  --foreground: #e6e9f2;
+  --muted: #93a0bd;
+  --primary: #818cf8;
+  --primary-hover: #6f7bf5;
+  --primary-foreground: #0a0e1a;
+  --accent: #f472b6;
+  --success: #22c55e;
+  --danger: #fb7185;
+  --warning: #fbbf24;
+  --ring: #6366f1;
+  --shadow-color: 230 60% 2%;
+}
+
+/* Map tokens to Tailwind theme so utilities like bg-surface / text-muted work. */
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-border: var(--border);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-accent: var(--accent);
+  --color-success: var(--success);
+  --color-danger: var(--danger);
+  --color-warning: var(--warning);
+  --color-ring: var(--ring);
+
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+
+  --radius-card: 1rem;
+}
+
+* {
+  border-color: var(--border);
+}
+
+html {
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  /* Avoid layout shift from scrollbar appearing/disappearing. */
+  scrollbar-gutter: stable;
+}
+
+/* Smooth theme transition without flashing on first paint. */
+.theme-transition,
+.theme-transition * {
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
+}
+
+/* Tic Tac Toe Infinity — countdown ring depletion + about-to-expire flicker.
+ * Duration is set inline per mark (= the configured lifetime). */
+@keyframes ttt-ring-deplete {
+  from {
+    stroke-dashoffset: 0;
+  }
+  to {
+    stroke-dashoffset: var(--ring-circ);
+  }
+}
+
+@keyframes ttt-flicker {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.25;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted);
+}
