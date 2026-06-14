@@ -15,6 +15,7 @@ const vi: Dict = {
   "nav.language": "Ngôn ngữ",
   "nav.soundOn": "Bật âm thanh",
   "nav.soundOff": "Tắt âm thanh",
+  "footer.tagline": "Công cụ & trò chơi cho mình và người thân.",
 
   // Home
   "home.title": "Bộ công cụ của Quy",
@@ -377,6 +378,7 @@ const en: Dict = {
   "nav.language": "Language",
   "nav.soundOn": "Turn sound on",
   "nav.soundOff": "Turn sound off",
+  "footer.tagline": "Tools & mini-games for me and my family.",
 
   "home.title": "Quy's Toolkit",
   "home.subtitle": "Handy tools & mini-games — for me and my family.",

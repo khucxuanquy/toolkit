@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "@/styles/globals.css";
 import { Providers } from "./providers";
 import { Navbar } from "@/shared/components/Navbar";
+import { Footer } from "@/shared/components/Footer";
 import { themeInitScript } from "@/core/theme/theme-store";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
@@ -43,6 +44,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Providers>
           <Navbar />
           <main className="mx-auto max-w-6xl px-4 py-8">{children}</main>
+          <Footer />
         </Providers>
       </body>
     </html>
