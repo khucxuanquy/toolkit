@@ -36,7 +36,7 @@ export default function BillSplitPage() {
     setItems((list) => (list.length > 1 ? list.filter((it) => it.id !== id) : list));
 
   return (
-    <div className="mx-auto grid max-w-2xl gap-5 md:grid-cols-2">
+    <div className="mx-auto grid max-w-4xl gap-5 md:grid-cols-2">
       {/* Inputs */}
       <Card>
         <CardBody className="space-y-5">

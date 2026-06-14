@@ -21,7 +21,7 @@ export default function QrGeneratorPage() {
   };
 
   return (
-    <div className="mx-auto grid max-w-2xl gap-5 md:grid-cols-2">
+    <div className="mx-auto grid max-w-5xl gap-5 md:grid-cols-2">
       <Card>
         <CardBody className="space-y-3">
           <label className="block space-y-1.5">

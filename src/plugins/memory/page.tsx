@@ -239,7 +239,7 @@ export default function MemoryPage() {
   };
 
   return (
-    <div className="mx-auto max-w-xl space-y-4">
+    <div className="mx-auto max-w-4xl space-y-4">
       {/* Mode + grid controls */}
       <div className="flex flex-wrap items-center justify-between gap-2">
         <Tabs<Preset>

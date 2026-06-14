@@ -64,7 +64,7 @@ export default function UnitConverterPage() {
     "h-10 rounded-xl border border-border bg-surface px-2 text-sm outline-none focus-visible:border-primary";
 
   return (
-    <div className="mx-auto max-w-lg space-y-5">
+    <div className="mx-auto max-w-2xl space-y-5">
       <div className="flex justify-center">
         <Tabs<Category>
           items={[

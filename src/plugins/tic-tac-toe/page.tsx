@@ -32,7 +32,7 @@ export default function TicTacToePage() {
       : t("ttt.playerOTurn");
 
   return (
-    <div className="mx-auto max-w-md space-y-5">
+    <div className="mx-auto max-w-lg space-y-5">
       <p className="text-muted text-center text-sm">{t("ttt.subtitle", { s: seconds })}</p>
 
       <ScoreBoard scores={game.scores} current={game.current} gameOver={game.gameOver} />

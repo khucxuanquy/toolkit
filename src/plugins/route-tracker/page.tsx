@@ -333,7 +333,7 @@ export default function RouteTrackerPage() {
   }
 
   return (
-    <div className="mx-auto max-w-3xl space-y-4">
+    <div className="mx-auto max-w-6xl space-y-4">
       <div className="grid grid-cols-3 gap-2">
         <Stat label={t("rt.distance")} value={fmtDistance(statDist)} />
         <Stat label={t("rt.duration")} value={statPts >= 2 ? fmtDuration(statDur) : "—"} />

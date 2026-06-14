@@ -139,7 +139,7 @@ export default function Game2048Page() {
   };
 
   return (
-    <div className="mx-auto max-w-md space-y-4">
+    <div className="mx-auto max-w-lg space-y-4">
       <div className="flex items-center justify-between gap-3">
         <div className="flex gap-2">
           <Stat label={t("g2048.score")} value={state.score} />

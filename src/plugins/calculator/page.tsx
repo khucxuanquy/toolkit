@@ -110,7 +110,7 @@ export default function CalculatorPage() {
   }, [onKey]);
 
   return (
-    <div className="mx-auto grid max-w-2xl gap-5 lg:grid-cols-[1fr_240px]">
+    <div className="mx-auto grid max-w-4xl gap-5 lg:grid-cols-[1fr_280px]">
       <Card>
         <CardBody className="space-y-4">
           {/* Display */}

@@ -67,7 +67,7 @@ export default function TodoPage() {
   };
 
   return (
-    <div className="mx-auto max-w-lg space-y-4">
+    <div className="mx-auto max-w-2xl space-y-4">
       <Card>
         <CardBody className="space-y-4">
           <form

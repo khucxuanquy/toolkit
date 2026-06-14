@@ -13,7 +13,7 @@ export default function TimerPage() {
   const [mode, setMode] = useState<Mode>("timer");
 
   return (
-    <div className="mx-auto max-w-md space-y-5">
+    <div className="mx-auto max-w-2xl space-y-5">
       <div className="flex justify-center">
         <Tabs<Mode>
           items={[

@@ -51,7 +51,7 @@ export default function PasswordGeneratorPage() {
   ];
 
   return (
-    <div className="mx-auto max-w-lg space-y-5">
+    <div className="mx-auto max-w-2xl space-y-5">
       <Card>
         <CardBody className="space-y-4">
           {/* Output */}

@@ -12,7 +12,7 @@ export default function ColorPalettePage() {
   const [mode, setMode] = useState<Mode>("palette");
 
   return (
-    <div className="mx-auto max-w-3xl space-y-5">
+    <div className="mx-auto max-w-6xl space-y-5">
       <div className="flex justify-center">
         <Tabs<Mode>
           items={[

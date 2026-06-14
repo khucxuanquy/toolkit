@@ -12,7 +12,7 @@ export default function CoinDicePage() {
   const { t } = useTranslation();
   const [mode, setMode] = useState<Mode>("coin");
   return (
-    <div className="mx-auto max-w-md space-y-5">
+    <div className="mx-auto max-w-2xl space-y-5">
       <div className="flex justify-center">
         <Tabs<Mode>
           items={[
