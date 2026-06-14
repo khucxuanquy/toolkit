@@ -6,12 +6,14 @@ import "mapbox-gl/dist/mapbox-gl.css";
 import { Button, Card, CardBody, Icon } from "@/shared/ui";
 import { useTranslation } from "@/core/i18n/useTranslation";
 import { sound } from "@/shared/lib/sound";
+import { cn } from "@/shared/utils/cn";
 import { MAPBOX_TOKEN } from "./config";
-import { routeStorage, type TrackPoint } from "./storage";
+import { routeStorage, type TrackPoint, type TrackSession } from "./storage";
 
 const DEFAULT_CENTER: [number, number] = [105.8542, 21.0285]; // Hà Nội
+const PLAYBACK_MS = 6000;
 
-/** Haversine distance (metres) between two [lng, lat] points. */
+/** Haversine distance (metres) between two points. */
 function distanceM(a: TrackPoint, b: TrackPoint): number {
   const R = 6371000;
   const toRad = (d: number) => (d * Math.PI) / 180;
@@ -29,48 +31,71 @@ function totalDistance(points: TrackPoint[]): number {
   return d;
 }
 
+/** Cumulative distance at each point (cum[0] = 0). */
+function cumulative(points: TrackPoint[]): number[] {
+  const cum = [0];
+  for (let i = 1; i < points.length; i += 1)
+    cum[i] = cum[i - 1] + distanceM(points[i - 1], points[i]);
+  return cum;
+}
+
+/** Coordinates from the start up to `target` metres along the path (head interpolated). */
+function coordsUpTo(points: TrackPoint[], cum: number[], target: number): [number, number][] {
+  if (target <= 0) return [[points[0].lng, points[0].lat]];
+  const total = cum[cum.length - 1];
+  if (target >= total) return points.map((p) => [p.lng, p.lat]);
+  let k = 1;
+  while (k < cum.length && cum[k] < target) k += 1;
+  const f = (target - cum[k - 1]) / (cum[k] - cum[k - 1] || 1);
+  const a = points[k - 1];
+  const b = points[k];
+  const coords = points.slice(0, k).map((p) => [p.lng, p.lat] as [number, number]);
+  coords.push([a.lng + (b.lng - a.lng) * f, a.lat + (b.lat - a.lat) * f]);
+  return coords;
+}
+
 function fmtDistance(m: number): string {
   return m >= 1000 ? `${(m / 1000).toFixed(2)} km` : `${Math.round(m)} m`;
 }
 function fmtDuration(ms: number): string {
   const s = Math.floor(ms / 1000);
   const mm = Math.floor(s / 60);
-  const ss = s % 60;
   if (mm >= 60) return `${Math.floor(mm / 60)}h ${mm % 60}m`;
-  return `${mm}m ${String(ss).padStart(2, "0")}s`;
+  return `${mm}m ${String(s % 60).padStart(2, "0")}s`;
 }
-
-const lineGeoJSON = (points: TrackPoint[]) => ({
+const lineGeoJSON = (coords: [number, number][]) => ({
   type: "Feature" as const,
   properties: {},
-  geometry: { type: "LineString" as const, coordinates: points.map((p) => [p.lng, p.lat]) },
+  geometry: { type: "LineString" as const, coordinates: coords },
 });
 
 export default function RouteTrackerPage() {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const mapContainer = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const markerRef = useRef<mapboxgl.Marker | null>(null);
   const pointsRef = useRef<TrackPoint[]>([]);
   const watchRef = useRef<number | null>(null);
+  const playbackRaf = useRef<number | null>(null);
   const readyRef = useRef(false);
 
   const [ready, setReady] = useState(false);
   const [tracking, setTracking] = useState(false);
+  const [playing, setPlaying] = useState(false);
   const [points, setPoints] = useState<TrackPoint[]>([]);
+  const [sessions, setSessions] = useState<TrackSession[]>([]);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const hasToken = MAPBOX_TOKEN.length > 0;
   const hasGeo = typeof navigator !== "undefined" && "geolocation" in navigator;
 
-  const drawLine = useCallback(() => {
-    const map = mapRef.current;
-    if (!map || !readyRef.current) return;
-    const src = map.getSource("route") as mapboxgl.GeoJSONSource | undefined;
-    src?.setData(lineGeoJSON(pointsRef.current));
+  const setRouteData = useCallback((coords: [number, number][]) => {
+    const src = mapRef.current?.getSource("route") as mapboxgl.GeoJSONSource | undefined;
+    src?.setData(lineGeoJSON(coords));
   }, []);
 
-  const placeMarker = useCallback((p: TrackPoint) => {
+  const setMarker = useCallback((lng: number, lat: number) => {
     const map = mapRef.current;
     if (!map) return;
     if (!markerRef.current) {
@@ -79,7 +104,14 @@ export default function RouteTrackerPage() {
         "width:18px;height:18px;border-radius:9999px;background:#10b981;border:3px solid #fff;box-shadow:0 0 0 2px rgba(16,185,129,0.4)";
       markerRef.current = new mapboxgl.Marker({ element: el });
     }
-    markerRef.current.setLngLat([p.lng, p.lat]).addTo(map);
+    markerRef.current.setLngLat([lng, lat]).addTo(map);
+  }, []);
+
+  const stopPlayback = useCallback(() => {
+    if (playbackRaf.current !== null) {
+      cancelAnimationFrame(playbackRaf.current);
+      playbackRaf.current = null;
+    }
   }, []);
 
   // Initialise the map once.
@@ -106,18 +138,6 @@ export default function RouteTrackerPage() {
       });
       readyRef.current = true;
       setReady(true);
-
-      // Restore the last recorded track, if any.
-      void routeStorage.loadTrack().then((saved) => {
-        if (!saved.length) return;
-        pointsRef.current = saved;
-        setPoints(saved);
-        drawLine();
-        placeMarker(saved[saved.length - 1]);
-        const b = new mapboxgl.LngLatBounds();
-        saved.forEach((p) => b.extend([p.lng, p.lat]));
-        map.fitBounds(b, { padding: 60, maxZoom: 16, duration: 0 });
-      });
     });
 
     return () => {
@@ -126,7 +146,18 @@ export default function RouteTrackerPage() {
       markerRef.current = null;
       readyRef.current = false;
     };
-  }, [hasToken, drawLine, placeMarker]);
+  }, [hasToken]);
+
+  // Load saved sessions once.
+  useEffect(() => {
+    let active = true;
+    void routeStorage.loadSessions().then((s) => {
+      if (active) setSessions(s);
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const onPosition = useCallback(
     (pos: GeolocationPosition) => {
@@ -136,16 +167,15 @@ export default function RouteTrackerPage() {
         t: pos.timestamp,
       };
       const prev = pointsRef.current[pointsRef.current.length - 1];
-      // Skip near-duplicate jitter (< 1.5 m).
-      if (prev && distanceM(prev, p) < 1.5) return;
+      if (prev && distanceM(prev, p) < 1.5) return; // skip GPS jitter
       const next = [...pointsRef.current, p];
       pointsRef.current = next;
       setPoints(next);
-      drawLine();
-      placeMarker(p);
+      setRouteData(next.map((q) => [q.lng, q.lat]));
+      setMarker(p.lng, p.lat);
       mapRef.current?.easeTo({ center: [p.lng, p.lat], duration: 600 });
     },
-    [drawLine, placeMarker],
+    [setRouteData, setMarker],
   );
 
   const start = useCallback(() => {
@@ -153,7 +183,15 @@ export default function RouteTrackerPage() {
       setError(t("rt.noGeo"));
       return;
     }
+    stopPlayback();
     setError(null);
+    setSelectedId(null);
+    setPlaying(false);
+    pointsRef.current = [];
+    setPoints([]);
+    setRouteData([]);
+    markerRef.current?.remove();
+    markerRef.current = null;
     sound.click();
     setTracking(true);
     watchRef.current = navigator.geolocation.watchPosition(
@@ -168,7 +206,7 @@ export default function RouteTrackerPage() {
       },
       { enableHighAccuracy: true, maximumAge: 1000, timeout: 20000 },
     );
-  }, [hasGeo, onPosition, t]);
+  }, [hasGeo, onPosition, setRouteData, stopPlayback, t]);
 
   const stop = useCallback(() => {
     if (watchRef.current !== null) {
@@ -177,27 +215,111 @@ export default function RouteTrackerPage() {
     }
     setTracking(false);
     sound.click();
-    void routeStorage.saveTrack(pointsRef.current);
+    const pts = pointsRef.current;
+    if (pts.length < 2) return; // nothing worth saving
+    const session: TrackSession = {
+      id: `s-${pts[0].t}`,
+      startedAt: pts[0].t,
+      durationMs: pts[pts.length - 1].t - pts[0].t,
+      distanceM: totalDistance(pts),
+      points: pts,
+    };
+    setSessions((prev) => {
+      const next = [session, ...prev.filter((s) => s.id !== session.id)];
+      void routeStorage.saveSessions(next);
+      return next;
+    });
+    setSelectedId(session.id);
   }, []);
 
-  const clear = useCallback(() => {
-    pointsRef.current = [];
-    setPoints([]);
-    drawLine();
-    markerRef.current?.remove();
-    markerRef.current = null;
-    void routeStorage.saveTrack([]);
-  }, [drawLine]);
+  // Play a saved session: the marker travels start → end while the line draws.
+  const play = useCallback(
+    (session: TrackSession) => {
+      const map = mapRef.current;
+      if (!map || !readyRef.current) return;
+      stopPlayback();
+      const pts = session.points;
+      setSelectedId(session.id);
+      setError(null);
 
-  // Stop watching on unmount.
+      const bounds = new mapboxgl.LngLatBounds();
+      pts.forEach((p) => bounds.extend([p.lng, p.lat]));
+      map.fitBounds(bounds, { padding: 60, maxZoom: 16, duration: 500 });
+
+      if (pts.length < 2) {
+        setRouteData(pts.map((p) => [p.lng, p.lat]));
+        if (pts[0]) setMarker(pts[0].lng, pts[0].lat);
+        return;
+      }
+
+      const cum = cumulative(pts);
+      const total = cum[cum.length - 1];
+      setRouteData([[pts[0].lng, pts[0].lat]]);
+      setMarker(pts[0].lng, pts[0].lat);
+      setPlaying(true);
+      let startTime = 0;
+      const loop = (now: number) => {
+        if (!startTime) startTime = now;
+        const p = Math.min(1, (now - startTime) / PLAYBACK_MS);
+        const eased = p < 0.5 ? 2 * p * p : 1 - (-2 * p + 2) ** 2 / 2;
+        const coords = coordsUpTo(pts, cum, eased * total);
+        setRouteData(coords);
+        const head = coords[coords.length - 1];
+        setMarker(head[0], head[1]);
+        if (p < 1) {
+          playbackRaf.current = requestAnimationFrame(loop);
+        } else {
+          playbackRaf.current = null;
+          setPlaying(false);
+        }
+      };
+      playbackRaf.current = requestAnimationFrame(loop);
+    },
+    [setRouteData, setMarker, stopPlayback],
+  );
+
+  const deleteSession = useCallback(
+    (id: string) => {
+      setSessions((prev) => {
+        const next = prev.filter((s) => s.id !== id);
+        void routeStorage.saveSessions(next);
+        return next;
+      });
+      if (selectedId === id) {
+        stopPlayback();
+        setSelectedId(null);
+        setPlaying(false);
+        setRouteData([]);
+        markerRef.current?.remove();
+        markerRef.current = null;
+      }
+    },
+    [selectedId, setRouteData, stopPlayback],
+  );
+
+  // Cleanup on unmount.
   useEffect(() => {
     return () => {
       if (watchRef.current !== null) navigator.geolocation.clearWatch(watchRef.current);
+      if (playbackRaf.current !== null) cancelAnimationFrame(playbackRaf.current);
     };
   }, []);
 
-  const dist = totalDistance(points);
-  const duration = points.length >= 2 ? points[points.length - 1].t - points[0].t : 0;
+  const selected = sessions.find((s) => s.id === selectedId) ?? null;
+  const statDist = selected ? selected.distanceM : totalDistance(points);
+  const statDur = selected
+    ? selected.durationMs
+    : points.length >= 2
+      ? points[points.length - 1].t - points[0].t
+      : 0;
+  const statPts = selected ? selected.points.length : points.length;
+  const dateFmt = (ts: number) =>
+    new Date(ts).toLocaleString(locale === "vi" ? "vi-VN" : "en-GB", {
+      day: "2-digit",
+      month: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
 
   if (!hasToken) {
     return (
@@ -213,14 +335,14 @@ export default function RouteTrackerPage() {
   return (
     <div className="mx-auto max-w-3xl space-y-4">
       <div className="grid grid-cols-3 gap-2">
-        <Stat label={t("rt.distance")} value={fmtDistance(dist)} />
-        <Stat label={t("rt.duration")} value={points.length >= 2 ? fmtDuration(duration) : "—"} />
-        <Stat label={t("rt.points")} value={String(points.length)} />
+        <Stat label={t("rt.distance")} value={fmtDistance(statDist)} />
+        <Stat label={t("rt.duration")} value={statPts >= 2 ? fmtDuration(statDur) : "—"} />
+        <Stat label={t("rt.points")} value={String(statPts)} />
       </div>
 
       <div
         ref={mapContainer}
-        className="border-border h-[58vh] min-h-80 w-full overflow-hidden rounded-2xl border"
+        className="border-border h-[52vh] min-h-72 w-full overflow-hidden rounded-2xl border"
       />
 
       {error && (
@@ -244,16 +366,62 @@ export default function RouteTrackerPage() {
             <Icon name="Square" size={16} /> {t("rt.stop")}
           </Button>
         )}
-        <Button
-          size="lg"
-          variant="outline"
-          onClick={clear}
-          disabled={tracking || points.length === 0}
-          className="whitespace-nowrap"
-        >
-          <Icon name="Trash2" size={16} /> {t("rt.clear")}
-        </Button>
+        {selected && !tracking && (
+          <Button
+            size="lg"
+            variant="outline"
+            onClick={() => play(selected)}
+            disabled={playing}
+            className="whitespace-nowrap"
+          >
+            <Icon name="Play" size={16} /> {playing ? t("rt.playing") : t("rt.replay")}
+          </Button>
+        )}
       </div>
+
+      {/* Saved routes */}
+      <Card>
+        <CardBody className="space-y-2">
+          <h3 className="font-semibold">{t("rt.savedRoutes")}</h3>
+          {sessions.length === 0 ? (
+            <p className="text-muted py-4 text-center text-sm">{t("rt.noSaved")}</p>
+          ) : (
+            <ul className="space-y-1.5">
+              {sessions.map((s) => (
+                <li
+                  key={s.id}
+                  className={cn(
+                    "flex items-center gap-2 rounded-lg border px-3 py-2 text-sm transition-colors",
+                    s.id === selectedId
+                      ? "border-primary bg-primary/10"
+                      : "border-border bg-surface",
+                  )}
+                >
+                  <button
+                    onClick={() => play(s)}
+                    disabled={tracking}
+                    className="flex flex-1 items-center gap-3 text-left disabled:opacity-50"
+                  >
+                    <Icon name="Route" size={16} className="text-primary" />
+                    <span className="flex-1">
+                      <span className="font-medium">{fmtDistance(s.distanceM)}</span>
+                      <span className="text-muted"> · {fmtDuration(s.durationMs)}</span>
+                      <span className="text-muted block text-xs">{dateFmt(s.startedAt)}</span>
+                    </span>
+                  </button>
+                  <button
+                    onClick={() => deleteSession(s.id)}
+                    aria-label={t("rt.deleteRoute")}
+                    className="text-muted hover:text-danger"
+                  >
+                    <Icon name="Trash2" size={15} />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </CardBody>
+      </Card>
 
       <p className="text-muted text-center text-sm">{t("rt.howto")}</p>
     </div>
