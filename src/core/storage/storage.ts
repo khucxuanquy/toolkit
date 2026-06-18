@@ -1,4 +1,4 @@
-import { compositeId, getDB } from "./db";
+import { compositeId, getDB, type KVRecord } from "./db";
 
 /**
  * Reusable IndexedDB-backed persistence layer.
@@ -8,14 +8,34 @@ import { compositeId, getDB } from "./db";
  * raw namespace string.
  */
 
+/** Optional hook called after every local write — used by Firebase cloud sync. */
+type KvHook = (record: KVRecord) => void;
+let syncHook: KvHook | null = null;
+export function setKvSyncHook(hook: KvHook | null): void {
+  syncHook = hook;
+}
+
 export async function saveData<T>(namespace: string, key: string, value: T): Promise<void> {
-  await getDB().kv.put({
+  const record: KVRecord = {
     id: compositeId(namespace, key),
     namespace,
     key,
     value,
     updatedAt: Date.now(),
-  });
+  };
+  await getDB().kv.put(record);
+  syncHook?.(record);
+}
+
+/** Every stored record — used by cloud sync to push the full local dataset. */
+export async function getAllRecords(): Promise<KVRecord[]> {
+  return getDB().kv.toArray();
+}
+
+/** Write a record straight to IndexedDB without firing the sync hook (used when
+ *  applying a change pulled from the cloud, so it isn't pushed back). */
+export async function applyRemoteRecord(record: KVRecord): Promise<void> {
+  await getDB().kv.put(record);
 }
 
 export async function loadData<T>(namespace: string, key: string, fallback: T): Promise<T>;

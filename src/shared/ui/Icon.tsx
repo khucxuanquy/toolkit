@@ -66,6 +66,8 @@ import {
   Navigation,
   LocateFixed,
   Square,
+  Trophy,
+  Crown,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/shared/utils/cn";
@@ -142,6 +144,8 @@ export const ICONS = {
   Navigation,
   LocateFixed,
   Square,
+  Trophy,
+  Crown,
 } satisfies Record<string, LucideIcon>;
 
 export type IconName = keyof typeof ICONS;

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Button, Icon, Tabs } from "@/shared/ui";
 import { useTranslation } from "@/core/i18n/useTranslation";
 import { sound } from "@/shared/lib/sound";
+import { reportScore } from "@/core/firebase/realtime";
 import { towerStorage, type BestScores, type Difficulty } from "./storage";
 
 /* ---- Virtual play-field (logical pixels; canvas is scaled to fit) ---- */
@@ -185,6 +186,7 @@ export default function TowerPage() {
         void towerStorage.saveBest(next);
         return next;
       });
+      reportScore("tower", finalScore);
       setPhase("over");
       sound.lose();
       return;

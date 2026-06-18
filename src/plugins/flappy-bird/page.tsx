@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Button, Icon } from "@/shared/ui";
 import { useTranslation } from "@/core/i18n/useTranslation";
 import { sound } from "@/shared/lib/sound";
+import { reportScore } from "@/core/firebase/realtime";
 import { flappyStorage } from "./storage";
 
 /* ---- Virtual play-field (logical pixels; canvas is scaled to fit) ---- */
@@ -298,6 +299,7 @@ export default function FlappyBirdPage() {
           w.birdY = Math.min(w.birdY, PLAY_H - BIRD_R);
           draw(ctx, w, "over");
           setBest((b) => Math.max(b, w.score));
+          reportScore("flappy-bird", w.score);
           setPhase("over");
           sound.lose();
           return; // stop scheduling

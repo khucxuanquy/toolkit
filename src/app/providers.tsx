@@ -7,6 +7,7 @@ import { usePlatformStore } from "@/core/services/platform-store";
 import { useAuthStore } from "@/core/auth/auth-store";
 import { PwaManager } from "@/core/services/PwaManager";
 import { Toaster } from "@/shared/ui";
+import { firebaseEnabled } from "@/core/firebase/config";
 
 export function Providers({ children }: { children: ReactNode }) {
   const hydrate = usePlatformStore((s) => s.hydrate);
@@ -17,6 +18,10 @@ export function Providers({ children }: { children: ReactNode }) {
     void hydrateAuth();
     // Re-enable theme transitions only after first paint to avoid flash.
     document.documentElement.classList.add("theme-transition");
+    // Fire up Firebase Analytics (lazy; no-op without a measurementId).
+    if (firebaseEnabled) {
+      void import("@/core/firebase/analytics").then((m) => m.initAnalytics());
+    }
   }, [hydrate, hydrateAuth]);
 
   return (

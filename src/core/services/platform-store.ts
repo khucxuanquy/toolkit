@@ -2,6 +2,7 @@
 
 import { create } from "zustand";
 import { createNamespace } from "@/core/storage/storage";
+import { CLOUD_SYNCED_EVENT } from "@/core/firebase/events";
 
 const store = createNamespace("platform");
 const FAVORITES_KEY = "favorites";
@@ -13,6 +14,7 @@ interface PlatformState {
   recents: string[];
   hydrated: boolean;
   hydrate: () => Promise<void>;
+  refresh: () => Promise<void>;
   toggleFavorite: (id: string) => void;
   isFavorite: (id: string) => boolean;
   markUsed: (id: string) => void;
@@ -29,11 +31,17 @@ export const usePlatformStore = create<PlatformState>((set, get) => ({
 
   hydrate: async () => {
     if (get().hydrated) return;
+    await get().refresh();
+    set({ hydrated: true });
+  },
+
+  // Re-read from IndexedDB (used after a cloud sync merges remote changes).
+  refresh: async () => {
     const [favorites, recents] = await Promise.all([
       store.load<string[]>(FAVORITES_KEY, []),
       store.load<string[]>(RECENTS_KEY, []),
     ]);
-    set({ favorites, recents, hydrated: true });
+    set({ favorites, recents });
   },
 
   toggleFavorite: (id) => {
@@ -52,3 +60,10 @@ export const usePlatformStore = create<PlatformState>((set, get) => ({
     void store.save(RECENTS_KEY, recents);
   },
 }));
+
+// Keep favorites/recents in sync when cloud sync pulls remote changes.
+if (typeof window !== "undefined") {
+  window.addEventListener(CLOUD_SYNCED_EVENT, () => {
+    void usePlatformStore.getState().refresh();
+  });
+}

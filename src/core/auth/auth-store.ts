@@ -2,17 +2,29 @@
 
 import { create } from "zustand";
 import { localAuth } from "./local-auth";
-import type { AuthUser, SignInInput, SignUpInput } from "./types";
+import { firebaseEnabled } from "@/core/firebase/config";
+import type { AuthService, AuthUser, SignInInput, SignUpInput } from "./types";
 
 /**
- * Active auth provider. Swap `localAuth` here for a real {@link AuthService}
- * (Firebase/Supabase) and nothing else in the app needs to change.
+ * Auth store. Uses real Firebase Auth when configured (Google + email/password,
+ * with live `onAuthStateChanged` updates and cloud-sync/presence side effects),
+ * and falls back to the local in-browser provider otherwise. The UI only ever
+ * talks to this store, so the provider can change without touching components.
  */
-const service = localAuth;
+
+let servicePromise: Promise<AuthService> | null = null;
+function getService(): Promise<AuthService> {
+  if (!servicePromise) {
+    servicePromise = firebaseEnabled
+      ? import("@/core/firebase/firebase-auth").then((m) => m.firebaseAuth)
+      : Promise.resolve(localAuth);
+  }
+  return servicePromise;
+}
 
 interface AuthState {
   user: AuthUser | null;
-  /** True once the session has been read from storage (avoids UI flicker). */
+  /** True once the session has been resolved (avoids UI flicker). */
   hydrated: boolean;
   hydrate: () => Promise<void>;
   signInEmail: (input: SignInInput) => Promise<AuthUser>;
@@ -27,30 +39,46 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   hydrate: async () => {
     if (get().hydrated) return;
-    const user = await service.getSession();
+
+    if (firebaseEnabled) {
+      const [{ onFirebaseAuth }, effects] = await Promise.all([
+        import("@/core/firebase/firebase-auth"),
+        import("@/core/firebase/session-effects"),
+      ]);
+      let prevId: string | null = null;
+      onFirebaseAuth((user) => {
+        set({ user, hydrated: true });
+        if (user && user.id !== prevId) void effects.onSignIn(user);
+        else if (!user && prevId) void effects.onSignOut();
+        prevId = user?.id ?? null;
+      });
+      return;
+    }
+
+    const user = await localAuth.getSession();
     set({ user, hydrated: true });
   },
 
   signInEmail: async (input) => {
-    const user = await service.signInEmail(input);
+    const user = await (await getService()).signInEmail(input);
     set({ user });
     return user;
   },
 
   signUpEmail: async (input) => {
-    const user = await service.signUpEmail(input);
+    const user = await (await getService()).signUpEmail(input);
     set({ user });
     return user;
   },
 
   signInGoogle: async () => {
-    const user = await service.signInGoogle();
+    const user = await (await getService()).signInGoogle();
     set({ user });
     return user;
   },
 
   signOut: async () => {
-    await service.signOut();
+    await (await getService()).signOut();
     set({ user: null });
   },
 }));

@@ -8,6 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useTranslation } from "@/core/i18n/useTranslation";
 import { useAuthStore } from "@/core/auth/auth-store";
+import { firebaseEnabled } from "@/core/firebase/config";
 import { Button, Input, Icon, Tabs, useToast } from "@/shared/ui";
 import { cn } from "@/shared/utils/cn";
 
@@ -258,7 +259,9 @@ export function AuthForm({ initialMode = "signin" }: { initialMode?: Mode }) {
         </button>
       </p>
 
-      <p className="text-muted text-center text-xs">{t("auth.demoGoogleNote")}</p>
+      {!firebaseEnabled && (
+        <p className="text-muted text-center text-xs">{t("auth.demoGoogleNote")}</p>
+      )}
 
       <div className="text-center">
         <Link href="/" className="text-muted text-sm hover:underline">

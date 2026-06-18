@@ -17,6 +17,7 @@
     "@hookform/resolvers": "^5.4.0",
     "clsx": "^2.1.1",
     "dexie": "^4.4.3",
+    "firebase": "^12.15.0",
     "framer-motion": "^12.40.0",
     "lucide-react": "^1.17.0",
     "mapbox-gl": "^3.24.1",

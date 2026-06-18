@@ -18,7 +18,10 @@ export function PluginHost({ pluginId }: { pluginId: string }) {
   const iconRef = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
-    if (plugin) markUsed(plugin.id);
+    if (!plugin) return;
+    markUsed(plugin.id);
+    // Analytics: which tool was opened (lazy import, no-op without Firebase).
+    void import("@/core/firebase/analytics").then((m) => m.track("open_tool", { tool: plugin.id }));
   }, [plugin, markUsed]);
 
   // Swap the favicon to one drawn from the tool's own icon while it's open.

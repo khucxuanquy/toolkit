@@ -88,6 +88,7 @@ const vi: Dict = {
   "auth.err.emailInUse": "Email này đã được đăng ký.",
   "auth.err.invalidCredentials": "Email hoặc mật khẩu không đúng.",
   "auth.err.generic": "Có lỗi xảy ra, vui lòng thử lại.",
+  "auth.err.popupClosed": "Cửa sổ đăng nhập đã bị đóng.",
 
   // Plugin metadata
   "plugins.tic-tac-toe.name": "Tic Tac Toe Vô Hạn",
@@ -263,6 +264,8 @@ const vi: Dict = {
   "plugins.tower.description": "Thả khối thật thẳng để xây tháp cao nhất.",
   "plugins.route-tracker.name": "Bản Đồ Hành Trình",
   "plugins.route-tracker.description": "Ghi lại đường bạn đã đi trên bản đồ (cần GPS + Internet).",
+  "plugins.leaderboard.name": "Bảng Xếp Hạng",
+  "plugins.leaderboard.description": "Xem ai đang trực tuyến và điểm cao toàn cầu (cần Internet).",
 
   // Coin & Dice
   "cd.tabCoin": "Đồng xu",
@@ -368,6 +371,14 @@ const vi: Dict = {
   "rt.noGeo": "Thiết bị không hỗ trợ định vị.",
   "rt.denied": "Bạn đã từ chối quyền truy cập vị trí.",
   "rt.geoError": "Không lấy được vị trí. Hãy thử lại ngoài trời.",
+
+  // Leaderboard
+  "lb.online": "Đang trực tuyến",
+  "lb.noOnline": "Chưa có ai trực tuyến.",
+  "lb.topScores": "Điểm cao",
+  "lb.noScores": "Chưa có điểm nào.",
+  "lb.signInHint": "Đăng nhập để tên bạn xuất hiện trên bảng xếp hạng.",
+  "lb.unavailable": "Cần kết nối Internet (và bật Realtime Database).",
 };
 
 const en: Dict = {
@@ -443,6 +454,7 @@ const en: Dict = {
   "auth.err.emailInUse": "This email is already registered.",
   "auth.err.invalidCredentials": "Incorrect email or password.",
   "auth.err.generic": "Something went wrong, please try again.",
+  "auth.err.popupClosed": "The sign-in window was closed.",
 
   "plugins.tic-tac-toe.name": "Tic Tac Toe Infinity",
   "plugins.tic-tac-toe.description":
@@ -617,6 +629,8 @@ const en: Dict = {
   "plugins.tower.description": "Drop blocks dead-straight to build the tallest tower.",
   "plugins.route-tracker.name": "Route Tracker",
   "plugins.route-tracker.description": "Record the path you walk on a live map (needs GPS + internet).",
+  "plugins.leaderboard.name": "Leaderboard",
+  "plugins.leaderboard.description": "See who's online and the global high scores (needs internet).",
 
   // Coin & Dice
   "cd.tabCoin": "Coin",
@@ -722,6 +736,14 @@ const en: Dict = {
   "rt.noGeo": "This device doesn't support geolocation.",
   "rt.denied": "Location permission was denied.",
   "rt.geoError": "Couldn't get your location. Try again outdoors.",
+
+  // Leaderboard
+  "lb.online": "Online now",
+  "lb.noOnline": "No one online right now.",
+  "lb.topScores": "High scores",
+  "lb.noScores": "No scores yet.",
+  "lb.signInHint": "Sign in to put your name on the leaderboard.",
+  "lb.unavailable": "Needs an internet connection (and Realtime Database enabled).",
 };
 
 export const dictionaries: Record<Locale, Dict> = { vi, en };

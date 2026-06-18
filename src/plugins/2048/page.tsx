@@ -4,6 +4,7 @@ import { useEffect, useReducer, useRef } from "react";
 import { Button, Icon } from "@/shared/ui";
 import { useTranslation } from "@/core/i18n/useTranslation";
 import { sound } from "@/shared/lib/sound";
+import { reportScore } from "@/core/firebase/realtime";
 import { cn } from "@/shared/utils/cn";
 import { canMove, move, newBoard, spawn, type Board, type Direction } from "./logic";
 import { game2048Storage } from "./storage";
@@ -109,8 +110,11 @@ export default function Game2048Page() {
     if (state.won) sound.win();
   }, [state.won]);
   useEffect(() => {
-    if (state.over) sound.lose();
-  }, [state.over]);
+    if (state.over) {
+      sound.lose();
+      reportScore("2048", state.score);
+    }
+  }, [state.over, state.score]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
