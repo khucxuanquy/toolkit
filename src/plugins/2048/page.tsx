@@ -5,6 +5,7 @@ import { Button, Icon } from "@/shared/ui";
 import { useTranslation } from "@/core/i18n/useTranslation";
 import { sound } from "@/shared/lib/sound";
 import { reportScore } from "@/core/firebase/realtime";
+import { GameLeaderboard } from "@/shared/components/GameLeaderboard";
 import { cn } from "@/shared/utils/cn";
 import { canMove, move, newBoard, spawn, type Board, type Direction } from "./logic";
 import { game2048Storage } from "./storage";
@@ -197,6 +198,8 @@ export default function Game2048Page() {
       </div>
 
       <p className="text-muted text-center text-sm">{t("g2048.howto")}</p>
+
+      <GameLeaderboard game="2048" />
     </div>
   );
 }

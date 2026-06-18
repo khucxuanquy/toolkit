@@ -5,6 +5,7 @@ import { Button, Icon, Tabs } from "@/shared/ui";
 import { useTranslation } from "@/core/i18n/useTranslation";
 import { sound } from "@/shared/lib/sound";
 import { reportScore } from "@/core/firebase/realtime";
+import { GameLeaderboard } from "@/shared/components/GameLeaderboard";
 import { towerStorage, type BestScores, type Difficulty } from "./storage";
 
 /* ---- Virtual play-field (logical pixels; canvas is scaled to fit) ---- */
@@ -371,6 +372,8 @@ export default function TowerPage() {
       </div>
 
       <p className="text-muted text-center text-sm">{t("tw.howto")}</p>
+
+      <GameLeaderboard game="tower" />
     </div>
   );
 }

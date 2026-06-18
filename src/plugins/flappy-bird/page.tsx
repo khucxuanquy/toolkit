@@ -5,6 +5,7 @@ import { Button, Icon } from "@/shared/ui";
 import { useTranslation } from "@/core/i18n/useTranslation";
 import { sound } from "@/shared/lib/sound";
 import { reportScore } from "@/core/firebase/realtime";
+import { GameLeaderboard } from "@/shared/components/GameLeaderboard";
 import { flappyStorage } from "./storage";
 
 /* ---- Virtual play-field (logical pixels; canvas is scaled to fit) ---- */
@@ -376,6 +377,8 @@ export default function FlappyBirdPage() {
       </div>
 
       <p className="text-muted text-center text-sm">{t("fb.howto")}</p>
+
+      <GameLeaderboard game="flappy-bird" />
     </div>
   );
 }
