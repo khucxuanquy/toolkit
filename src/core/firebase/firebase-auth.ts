@@ -102,6 +102,34 @@ export const firebaseAuth: AuthService = {
     const auth = getAuthInstance();
     if (auth) await fbSignOut(auth);
   },
+
+  async updateProfile(changes) {
+    const auth = requireAuth();
+    const u = auth.currentUser;
+    if (!u) throw new Error("auth.err.generic");
+    try {
+      let photoURL: string | null | undefined = u.photoURL;
+      if (changes.removeAvatar) {
+        photoURL = "";
+      } else if (changes.avatarFile) {
+        const { getStorageInstance } = await import("./app");
+        const { ref: storageRef, uploadBytes, getDownloadURL } = await import("firebase/storage");
+        const storage = getStorageInstance();
+        if (!storage) throw new Error("auth.err.generic");
+        const r = storageRef(storage, `avatars/${u.uid}`);
+        await uploadBytes(r, changes.avatarFile);
+        photoURL = await getDownloadURL(r);
+      }
+      await updateProfile(u, {
+        displayName: changes.name?.trim() || u.displayName || undefined,
+        photoURL: photoURL ?? undefined,
+      });
+      await u.reload();
+      return mapUser(auth.currentUser ?? u);
+    } catch (e) {
+      throw mapError(e);
+    }
+  },
 };
 
 /** Subscribe to live auth changes (sign-in via popup, token refresh, sign-out). */

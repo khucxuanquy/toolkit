@@ -16,6 +16,7 @@ import { manifest as flappyBird } from "@/plugins/flappy-bird/manifest";
 import { manifest as tower } from "@/plugins/tower/manifest";
 import { manifest as routeTracker } from "@/plugins/route-tracker/manifest";
 import { manifest as leaderboard } from "@/plugins/leaderboard/manifest";
+import { manifest as speech } from "@/plugins/speech/manifest";
 
 /**
  * Plugin ids known at build time. Used by `generateStaticParams` so the static
@@ -43,6 +44,7 @@ const MANIFESTS = [
   tower,
   routeTracker,
   leaderboard,
+  speech,
 ];
 
 export const PLUGIN_IDS: string[] = MANIFESTS.map((m) => m.id);

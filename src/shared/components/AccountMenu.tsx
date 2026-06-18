@@ -7,10 +7,35 @@ import { useAuthStore } from "@/core/auth/auth-store";
 import { useTranslation } from "@/core/i18n/useTranslation";
 import { Icon, useToast } from "@/shared/ui";
 import { cn } from "@/shared/utils/cn";
+import { ProfileDialog } from "./ProfileDialog";
 
 function initial(user: { name?: string; email: string }): string {
   const base = user.name?.trim() || user.email;
   return base.charAt(0).toUpperCase();
+}
+
+/** Avatar image when set, otherwise the initial on a gradient. */
+function Avatar({
+  user,
+  className,
+}: {
+  user: { name?: string; email: string; avatarUrl?: string };
+  className?: string;
+}) {
+  if (user.avatarUrl) {
+    // eslint-disable-next-line @next/next/no-img-element
+    return <img src={user.avatarUrl} alt="" className={cn("object-cover", className)} />;
+  }
+  return (
+    <span
+      className={cn(
+        "from-primary to-accent flex items-center justify-center bg-gradient-to-br font-bold text-white",
+        className,
+      )}
+    >
+      {initial(user)}
+    </span>
+  );
 }
 
 export function AccountMenu() {
@@ -20,6 +45,7 @@ export function AccountMenu() {
   const hydrated = useAuthStore((s) => s.hydrated);
   const signOut = useAuthStore((s) => s.signOut);
   const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -56,9 +82,9 @@ export function AccountMenu() {
       <button
         onClick={() => setOpen((v) => !v)}
         aria-label={t("auth.account")}
-        className="from-primary to-accent flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br text-sm font-bold text-white shadow-sm"
+        className="block h-10 w-10 overflow-hidden rounded-xl shadow-sm"
       >
-        {initial(user)}
+        <Avatar user={user} className="h-10 w-10 rounded-xl text-sm" />
       </button>
 
       <AnimatePresence>
@@ -71,15 +97,22 @@ export function AccountMenu() {
             className="border-border bg-surface absolute right-0 z-30 mt-2 w-56 overflow-hidden rounded-xl border p-1 shadow-lg"
           >
             <div className="flex items-center gap-2.5 px-3 py-2">
-              <span className="from-primary to-accent flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br text-sm font-bold text-white">
-                {initial(user)}
-              </span>
+              <Avatar user={user} className="h-9 w-9 shrink-0 rounded-lg text-sm" />
               <div className="min-w-0">
                 <p className="truncate text-sm font-semibold">{user.name}</p>
                 <p className="text-muted truncate text-xs">{user.email}</p>
               </div>
             </div>
             <div className="bg-border my-1 h-px" />
+            <button
+              onClick={() => {
+                setOpen(false);
+                setEditing(true);
+              }}
+              className="hover:bg-surface-2 flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm"
+            >
+              <Icon name="User" size={16} /> {t("profile.edit")}
+            </button>
             <button
               onClick={handleSignOut}
               className={cn(
@@ -91,6 +124,8 @@ export function AccountMenu() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {editing && <ProfileDialog onClose={() => setEditing(false)} />}
     </div>
   );
 }

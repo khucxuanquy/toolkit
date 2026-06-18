@@ -9,6 +9,7 @@ import {
   type Firestore,
 } from "firebase/firestore";
 import { getDatabase, type Database } from "firebase/database";
+import { getStorage, type FirebaseStorage } from "firebase/storage";
 import { firebaseConfig, firebaseEnabled, realtimeEnabled } from "./config";
 
 /**
@@ -21,6 +22,7 @@ let app: FirebaseApp | null = null;
 let authInstance: Auth | null = null;
 let dbInstance: Firestore | null = null;
 let rtdbInstance: Database | null = null;
+let storageInstance: FirebaseStorage | null = null;
 
 export function getFirebaseApp(): FirebaseApp | null {
   if (!firebaseEnabled || typeof window === "undefined") return null;
@@ -52,4 +54,11 @@ export function getRtdb(): Database | null {
   if (!a || !realtimeEnabled) return null;
   if (!rtdbInstance) rtdbInstance = getDatabase(a);
   return rtdbInstance;
+}
+
+export function getStorageInstance(): FirebaseStorage | null {
+  const a = getFirebaseApp();
+  if (!a) return null;
+  if (!storageInstance) storageInstance = getStorage(a);
+  return storageInstance;
 }

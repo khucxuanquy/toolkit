@@ -27,6 +27,7 @@ import "@/plugins/flappy-bird";
 import "@/plugins/tower";
 import "@/plugins/route-tracker";
 import "@/plugins/leaderboard";
+import "@/plugins/speech";
 
 /** Imported for its side effects only. */
 export const PLUGINS_REGISTERED = true;

@@ -1,5 +1,14 @@
 import { createNamespace } from "@/core/storage/storage";
-import type { AuthService, AuthUser, SignInInput, SignUpInput } from "./types";
+import type { AuthService, AuthUser, ProfileChanges, SignInInput, SignUpInput } from "./types";
+
+function fileToDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = () => reject(new Error("auth.err.generic"));
+    reader.readAsDataURL(file);
+  });
+}
 
 /**
  * Local, in-browser auth implementation. Accounts and the active session live
@@ -117,5 +126,24 @@ export const localAuth: AuthService = {
 
   async signOut() {
     await setSession(null);
+  },
+
+  async updateProfile(changes: ProfileChanges) {
+    const current = await store.load<AuthUser | null>(SESSION_KEY, null);
+    if (!current) throw new Error("auth.err.generic");
+    let avatarUrl = current.avatarUrl;
+    if (changes.removeAvatar) avatarUrl = undefined;
+    else if (changes.avatarFile) avatarUrl = await fileToDataUrl(changes.avatarFile);
+    const name = changes.name?.trim() || current.name;
+    const updated: AuthUser = { ...current, name, avatarUrl };
+    await setSession(updated);
+    // Keep the stored account record in sync too.
+    const users = await getUsers();
+    const key = current.email.trim().toLowerCase();
+    if (users[key]) {
+      users[key] = { ...users[key], name, avatarUrl };
+      await store.save(USERS_KEY, users);
+    }
+    return updated;
   },
 };

@@ -3,7 +3,7 @@
 import { create } from "zustand";
 import { localAuth } from "./local-auth";
 import { firebaseEnabled } from "@/core/firebase/config";
-import type { AuthService, AuthUser, SignInInput, SignUpInput } from "./types";
+import type { AuthService, AuthUser, ProfileChanges, SignInInput, SignUpInput } from "./types";
 
 /**
  * Auth store. Uses real Firebase Auth when configured (Google + email/password,
@@ -31,6 +31,7 @@ interface AuthState {
   signUpEmail: (input: SignUpInput) => Promise<AuthUser>;
   signInGoogle: () => Promise<AuthUser>;
   signOut: () => Promise<void>;
+  updateProfile: (changes: ProfileChanges) => Promise<AuthUser>;
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
@@ -80,5 +81,16 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   signOut: async () => {
     await (await getService()).signOut();
     set({ user: null });
+  },
+
+  updateProfile: async (changes) => {
+    const user = await (await getService()).updateProfile(changes);
+    set({ user });
+    // Reflect the new name/avatar in live presence.
+    if (firebaseEnabled) {
+      const { startPresence } = await import("@/core/firebase/realtime");
+      startPresence(user);
+    }
+    return user;
   },
 }));

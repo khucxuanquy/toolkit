@@ -90,6 +90,14 @@ const vi: Dict = {
   "auth.err.generic": "Có lỗi xảy ra, vui lòng thử lại.",
   "auth.err.popupClosed": "Cửa sổ đăng nhập đã bị đóng.",
 
+  "profile.edit": "Sửa hồ sơ",
+  "profile.nickname": "Biệt danh",
+  "profile.changePhoto": "Đổi ảnh",
+  "profile.removePhoto": "Xóa ảnh",
+  "profile.save": "Lưu",
+  "profile.cancel": "Hủy",
+  "profile.saved": "Đã lưu hồ sơ",
+
   // Plugin metadata
   "plugins.tic-tac-toe.name": "Tic Tac Toe Vô Hạn",
   "plugins.tic-tac-toe.description": "Cờ ca-rô 3×3 với các dấu tự biến mất sau vài giây.",
@@ -266,6 +274,8 @@ const vi: Dict = {
   "plugins.route-tracker.description": "Ghi lại đường bạn đã đi trên bản đồ (cần GPS + Internet).",
   "plugins.leaderboard.name": "Bảng Xếp Hạng",
   "plugins.leaderboard.description": "Xem ai đang trực tuyến và điểm cao toàn cầu (cần Internet).",
+  "plugins.speech.name": "Văn Bản ↔ Giọng Nói",
+  "plugins.speech.description": "Đọc văn bản thành tiếng và chuyển giọng nói thành văn bản (Việt/Anh).",
 
   // Coin & Dice
   "cd.tabCoin": "Đồng xu",
@@ -379,6 +389,29 @@ const vi: Dict = {
   "lb.noScores": "Chưa có điểm nào.",
   "lb.signInHint": "Đăng nhập để tên bạn xuất hiện trên bảng xếp hạng.",
   "lb.unavailable": "Cần kết nối Internet (và bật Realtime Database).",
+
+  // Speech tools
+  "st.tabTts": "Văn bản → Giọng nói",
+  "st.tabStt": "Giọng nói → Văn bản",
+  "st.language": "Ngôn ngữ",
+  "st.voice": "Giọng đọc",
+  "st.autoVoice": "Tự động",
+  "st.rate": "Tốc độ",
+  "st.ttsPlaceholder": "Nhập văn bản để đọc thành tiếng…",
+  "st.speak": "Đọc",
+  "st.speaking": "Đang đọc…",
+  "st.stop": "Dừng",
+  "st.noVoice": "Không có giọng cho ngôn ngữ này trên thiết bị — sẽ dùng giọng mặc định.",
+  "st.ttsUnsupported": "Trình duyệt không hỗ trợ đọc văn bản.",
+  "st.listen": "Bắt đầu nghe",
+  "st.listening": "Đang nghe…",
+  "st.sttPlaceholder": "Bấm “Bắt đầu nghe” rồi nói…",
+  "st.copy": "Sao chép",
+  "st.copied": "Đã sao chép",
+  "st.clear": "Xóa",
+  "st.micDenied": "Bạn đã từ chối quyền micro.",
+  "st.sttError": "Lỗi nhận diện giọng nói, hãy thử lại.",
+  "st.sttUnsupported": "Trình duyệt không hỗ trợ nhận diện giọng nói (hãy dùng Chrome/Edge và cho phép micro).",
 };
 
 const en: Dict = {
@@ -455,6 +488,14 @@ const en: Dict = {
   "auth.err.invalidCredentials": "Incorrect email or password.",
   "auth.err.generic": "Something went wrong, please try again.",
   "auth.err.popupClosed": "The sign-in window was closed.",
+
+  "profile.edit": "Edit profile",
+  "profile.nickname": "Nickname",
+  "profile.changePhoto": "Change photo",
+  "profile.removePhoto": "Remove photo",
+  "profile.save": "Save",
+  "profile.cancel": "Cancel",
+  "profile.saved": "Profile saved",
 
   "plugins.tic-tac-toe.name": "Tic Tac Toe Infinity",
   "plugins.tic-tac-toe.description":
@@ -631,6 +672,8 @@ const en: Dict = {
   "plugins.route-tracker.description": "Record the path you walk on a live map (needs GPS + internet).",
   "plugins.leaderboard.name": "Leaderboard",
   "plugins.leaderboard.description": "See who's online and the global high scores (needs internet).",
+  "plugins.speech.name": "Text ↔ Speech",
+  "plugins.speech.description": "Read text aloud and turn your voice into text (Vietnamese & English).",
 
   // Coin & Dice
   "cd.tabCoin": "Coin",
@@ -744,6 +787,29 @@ const en: Dict = {
   "lb.noScores": "No scores yet.",
   "lb.signInHint": "Sign in to put your name on the leaderboard.",
   "lb.unavailable": "Needs an internet connection (and Realtime Database enabled).",
+
+  // Speech tools
+  "st.tabTts": "Text to speech",
+  "st.tabStt": "Speech to text",
+  "st.language": "Language",
+  "st.voice": "Voice",
+  "st.autoVoice": "Automatic",
+  "st.rate": "Speed",
+  "st.ttsPlaceholder": "Type text to read aloud…",
+  "st.speak": "Speak",
+  "st.speaking": "Speaking…",
+  "st.stop": "Stop",
+  "st.noVoice": "No voice for this language on your device — using the default.",
+  "st.ttsUnsupported": "Your browser doesn't support text-to-speech.",
+  "st.listen": "Start listening",
+  "st.listening": "Listening…",
+  "st.sttPlaceholder": "Press “Start listening” and speak…",
+  "st.copy": "Copy",
+  "st.copied": "Copied",
+  "st.clear": "Clear",
+  "st.micDenied": "Microphone permission was denied.",
+  "st.sttError": "Speech recognition error, please try again.",
+  "st.sttUnsupported": "Speech recognition isn't supported (use Chrome/Edge and allow the mic).",
 };
 
 export const dictionaries: Record<Locale, Dict> = { vi, en };

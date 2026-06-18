@@ -26,12 +26,23 @@ export interface SignInInput {
  * provider (Firebase, Supabase, …) only means providing another object with
  * this same shape.
  */
+export interface ProfileChanges {
+  /** New display name (nickname). */
+  name?: string;
+  /** New avatar image file to upload/store. */
+  avatarFile?: File;
+  /** Remove the current avatar. */
+  removeAvatar?: boolean;
+}
+
 export interface AuthService {
   getSession(): Promise<AuthUser | null>;
   signUpEmail(input: SignUpInput): Promise<AuthUser>;
   signInEmail(input: SignInInput): Promise<AuthUser>;
   signInGoogle(): Promise<AuthUser>;
   signOut(): Promise<void>;
+  /** Update the current user's nickname / avatar. */
+  updateProfile(changes: ProfileChanges): Promise<AuthUser>;
 }
 
 /** Error codes thrown by the auth service — also used as i18n keys. */

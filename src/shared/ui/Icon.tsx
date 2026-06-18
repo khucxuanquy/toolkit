@@ -68,6 +68,8 @@ import {
   Square,
   Trophy,
   Crown,
+  Mic,
+  AudioLines,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/shared/utils/cn";
@@ -146,6 +148,8 @@ export const ICONS = {
   Square,
   Trophy,
   Crown,
+  Mic,
+  AudioLines,
 } satisfies Record<string, LucideIcon>;
 
 export type IconName = keyof typeof ICONS;
