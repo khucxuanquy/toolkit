@@ -412,6 +412,31 @@ const vi: Dict = {
   "st.micDenied": "Bạn đã từ chối quyền micro.",
   "st.sttError": "Lỗi nhận diện giọng nói, hãy thử lại.",
   "st.sttUnsupported": "Trình duyệt không hỗ trợ nhận diện giọng nói (hãy dùng Chrome/Edge và cho phép micro).",
+
+  // Music Room
+  "category.Entertainment": "Giải trí",
+  "mr.noDb": "Cần kết nối Internet và Firebase Realtime Database.",
+  "mr.createRoom": "Tạo phòng",
+  "mr.joinByCode": "Tham gia bằng mã",
+  "mr.roomName": "Tên phòng",
+  "mr.public": "Công khai",
+  "mr.private": "Riêng tư",
+  "mr.enter": "Vào phòng",
+  "mr.leave": "Rời phòng",
+  "mr.addPlaceholder": "Dán link YouTube...",
+  "mr.noQueue": "Chưa có bài hát nào trong hàng đợi.",
+  "mr.queue": "Hàng đợi",
+  "mr.chat": "Nhắn tin",
+  "mr.chatPlaceholder": "Nhắn gì đó...",
+  "mr.online": "đang nghe",
+  "mr.host": "Chủ phòng",
+  "mr.publicRooms": "Phòng công khai",
+  "mr.noRooms": "Chưa có phòng nào — hãy tạo phòng đầu tiên!",
+  "mr.code": "Mã phòng (6 ký tự)",
+  "mr.errorUrl": "Link YouTube không hợp lệ.",
+  "mr.notFound": "Không tìm thấy phòng với mã này.",
+  "mr.yourName": "Tên của bạn",
+  "mr.continue": "Tiếp tục",
 };
 
 const en: Dict = {
@@ -810,6 +835,31 @@ const en: Dict = {
   "st.micDenied": "Microphone permission was denied.",
   "st.sttError": "Speech recognition error, please try again.",
   "st.sttUnsupported": "Speech recognition isn't supported (use Chrome/Edge and allow the mic).",
+
+  // Music Room
+  "category.Entertainment": "Entertainment",
+  "mr.noDb": "Requires an internet connection and Firebase Realtime Database.",
+  "mr.createRoom": "Create Room",
+  "mr.joinByCode": "Join by Code",
+  "mr.roomName": "Room name",
+  "mr.public": "Public",
+  "mr.private": "Private",
+  "mr.enter": "Enter",
+  "mr.leave": "Leave",
+  "mr.addPlaceholder": "Paste YouTube URL...",
+  "mr.noQueue": "Queue is empty — paste a YouTube link to add a song.",
+  "mr.queue": "Queue",
+  "mr.chat": "Chat",
+  "mr.chatPlaceholder": "Say something...",
+  "mr.online": "listening",
+  "mr.host": "Host",
+  "mr.publicRooms": "Public Rooms",
+  "mr.noRooms": "No public rooms yet — create the first one!",
+  "mr.code": "Room code (6 chars)",
+  "mr.errorUrl": "Invalid YouTube URL.",
+  "mr.notFound": "Room not found.",
+  "mr.yourName": "Your name",
+  "mr.continue": "Continue",
 };
 
 export const dictionaries: Record<Locale, Dict> = { vi, en };

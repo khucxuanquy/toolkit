@@ -1,7 +1,7 @@
 import type { ComponentType } from "react";
 
 /** High-level grouping shown on the dashboard. */
-export type PluginCategory = "Games" | "Utilities" | "Productivity" | "Generators";
+export type PluginCategory = "Games" | "Utilities" | "Productivity" | "Generators" | "Entertainment";
 
 /**
  * The contract every tool/game must satisfy to live on the platform.
