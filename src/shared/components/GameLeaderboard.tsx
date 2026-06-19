@@ -14,7 +14,7 @@ import { watchLeaderboard, type ScoreEntry } from "@/core/firebase/realtime";
  * Realtime DB isn't configured. Invites signed-out players to sign in (optional)
  * so their score can be ranked.
  */
-export function GameLeaderboard({ game, max = 5 }: { game: string; max?: number }) {
+export function GameLeaderboard({ game, max = 10 }: { game: string; max?: number }) {
   const { t } = useTranslation();
   const user = useAuthStore((s) => s.user);
   const [scores, setScores] = useState<ScoreEntry[]>([]);

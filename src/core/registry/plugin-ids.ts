@@ -15,7 +15,6 @@ import { manifest as unitConverter } from "@/plugins/unit-converter/manifest";
 import { manifest as flappyBird } from "@/plugins/flappy-bird/manifest";
 import { manifest as tower } from "@/plugins/tower/manifest";
 import { manifest as routeTracker } from "@/plugins/route-tracker/manifest";
-import { manifest as leaderboard } from "@/plugins/leaderboard/manifest";
 import { manifest as speech } from "@/plugins/speech/manifest";
 
 /**
@@ -43,7 +42,6 @@ const MANIFESTS = [
   flappyBird,
   tower,
   routeTracker,
-  leaderboard,
   speech,
 ];
 
