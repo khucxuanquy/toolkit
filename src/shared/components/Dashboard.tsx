@@ -14,7 +14,7 @@ import { Icon } from "@/shared/ui";
 import { cn } from "@/shared/utils/cn";
 import { PluginCard } from "./PluginCard";
 
-const CATEGORY_ORDER = ["Games", "Utilities", "Productivity", "Generators"];
+const CATEGORY_ORDER = ["Games", "Entertainment", "Utilities", "Productivity", "Generators"];
 
 /** Matches against both default and localized name/description so search works
  *  regardless of the active language. */
@@ -29,6 +29,42 @@ function matches(plugin: PlatformPlugin, query: string, locale: Locale): boolean
     localized.description.toLowerCase().includes(q) ||
     plugin.category.toLowerCase().includes(q) ||
     (plugin.tags ?? []).some((tag) => tag.toLowerCase().includes(q))
+  );
+}
+
+/** Horizontal row of category chips for filtering the grid. */
+function CategoryFilter({
+  categories,
+  active,
+  onSelect,
+}: {
+  categories: string[];
+  active: string | null;
+  onSelect: (category: string | null) => void;
+}) {
+  const { t } = useTranslation();
+  const chip = (key: string | null, label: string) => {
+    const selected = active === key;
+    return (
+      <button
+        key={key ?? "__all"}
+        onClick={() => onSelect(key)}
+        className={cn(
+          "shrink-0 rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors",
+          selected
+            ? "bg-primary text-white shadow-sm"
+            : "bg-surface-2 text-muted hover:text-foreground",
+        )}
+      >
+        {label}
+      </button>
+    );
+  };
+  return (
+    <div className="-mx-1 flex [scrollbar-width:thin] gap-2 overflow-x-auto px-1 pb-1">
+      {chip(null, t("dashboard.allCategories"))}
+      {categories.map((c) => chip(c, t(`category.${c}`)))}
+    </div>
   );
 }
 
@@ -111,15 +147,28 @@ function RecentRow({ title, plugins }: { title: string; plugins: PlatformPlugin[
 
 export function Dashboard() {
   const mounted = useMounted();
-  const { query, favoritesOnly } = useDashboardUI();
+  const { query, favoritesOnly, category, setCategory } = useDashboardUI();
   const { t, locale } = useTranslation();
   const favorites = usePlatformStore((s) => s.favorites);
   const recents = usePlatformStore((s) => s.recents);
 
   const allPlugins = useMemo(() => getAllPlugins(), []);
+
+  // All categories present, ordered — used to render the filter chips.
+  const allCategories = useMemo(() => {
+    const present = new Set<string>(allPlugins.map((p) => p.category));
+    return [
+      ...CATEGORY_ORDER.filter((c) => present.has(c)),
+      ...[...present].filter((c) => !CATEGORY_ORDER.includes(c)),
+    ];
+  }, [allPlugins]);
+
   const filtered = useMemo(
-    () => allPlugins.filter((p) => matches(p, query, locale)),
-    [allPlugins, query, locale],
+    () =>
+      allPlugins.filter(
+        (p) => matches(p, query, locale) && (!category || p.category === category),
+      ),
+    [allPlugins, query, locale, category],
   );
 
   const recentPlugins = useMemo(
@@ -161,28 +210,30 @@ export function Dashboard() {
     );
   }
 
-  if (filtered.length === 0) {
-    return (
-      <EmptyState
-        icon="Search"
-        title={t("dashboard.nothingFoundTitle")}
-        message={t("dashboard.nothingFoundMsg", { query })}
-      />
-    );
-  }
-
   return (
-    <div className="space-y-10">
-      {!query && mounted && recentPlugins.length > 0 && (
-        <RecentRow title={t("dashboard.recentlyUsed")} plugins={recentPlugins} />
-      )}
-      {orderedCategories.map((category) => (
-        <Section
-          key={category}
-          title={t(`category.${category}`)}
-          plugins={byCategory.get(category) ?? []}
+    <div className="space-y-8">
+      <CategoryFilter categories={allCategories} active={category} onSelect={setCategory} />
+
+      {filtered.length === 0 ? (
+        <EmptyState
+          icon="Search"
+          title={t("dashboard.nothingFoundTitle")}
+          message={t("dashboard.nothingFoundMsg", { query })}
         />
-      ))}
+      ) : (
+        <div className="space-y-10">
+          {!query && !category && mounted && recentPlugins.length > 0 && (
+            <RecentRow title={t("dashboard.recentlyUsed")} plugins={recentPlugins} />
+          )}
+          {orderedCategories.map((cat) => (
+            <Section
+              key={cat}
+              title={t(`category.${cat}`)}
+              plugins={byCategory.get(cat) ?? []}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
