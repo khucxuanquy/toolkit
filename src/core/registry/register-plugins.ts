@@ -28,6 +28,7 @@ import "@/plugins/tower";
 import "@/plugins/route-tracker";
 import "@/plugins/speech";
 import "@/plugins/music-room";
+import "@/plugins/sudoku";
 
 /** Imported for its side effects only. */
 export const PLUGINS_REGISTERED = true;

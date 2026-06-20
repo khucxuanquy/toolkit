@@ -506,6 +506,19 @@ const vi: Dict = {
   "admin.type.info": "Thông tin",
   "admin.type.warning": "Cảnh báo",
   "admin.type.success": "Thành công",
+
+  // Sudoku
+  "su.pickDifficulty": "Chọn độ khó để bắt đầu",
+  "su.easy": "Dễ",
+  "su.medium": "Trung bình",
+  "su.hard": "Khó",
+  "su.best": "Tốt nhất",
+  "su.notes": "Ghi chú",
+  "su.erase": "Xóa",
+  "su.newGame": "Ván mới",
+  "su.solved": "Hoàn thành!",
+  "su.solvedMsg": "Bạn đã giải xong trong {time}.",
+  "su.newBest": "Kỷ lục mới! 🎉",
 };
 
 const en: Dict = {
@@ -998,6 +1011,19 @@ const en: Dict = {
   "admin.type.info": "Info",
   "admin.type.warning": "Warning",
   "admin.type.success": "Success",
+
+  // Sudoku
+  "su.pickDifficulty": "Pick a difficulty to start",
+  "su.easy": "Easy",
+  "su.medium": "Medium",
+  "su.hard": "Hard",
+  "su.best": "Best",
+  "su.notes": "Notes",
+  "su.erase": "Erase",
+  "su.newGame": "New game",
+  "su.solved": "Solved!",
+  "su.solvedMsg": "You solved it in {time}.",
+  "su.newBest": "New best time! 🎉",
 };
 
 export const dictionaries: Record<Locale, Dict> = { vi, en };

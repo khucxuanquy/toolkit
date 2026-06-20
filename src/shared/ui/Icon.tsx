@@ -85,6 +85,7 @@ import {
   Shield,
   Inbox,
   UserPlus,
+  Eraser,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/shared/utils/cn";
@@ -180,6 +181,7 @@ export const ICONS = {
   Shield,
   Inbox,
   UserPlus,
+  Eraser,
 } satisfies Record<string, LucideIcon>;
 
 export type IconName = keyof typeof ICONS;

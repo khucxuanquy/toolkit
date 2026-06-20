@@ -17,6 +17,7 @@ import { manifest as tower } from "@/plugins/tower/manifest";
 import { manifest as routeTracker } from "@/plugins/route-tracker/manifest";
 import { manifest as speech } from "@/plugins/speech/manifest";
 import { manifest as musicRoom } from "@/plugins/music-room/manifest";
+import { manifest as sudoku } from "@/plugins/sudoku/manifest";
 
 /**
  * Plugin ids known at build time. Used by `generateStaticParams` so the static
@@ -45,6 +46,7 @@ const MANIFESTS = [
   routeTracker,
   speech,
   musicRoom,
+  sudoku,
 ];
 
 export const PLUGIN_IDS: string[] = MANIFESTS.map((m) => m.id);
