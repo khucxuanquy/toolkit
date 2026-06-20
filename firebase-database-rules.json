@@ -1,5 +1,5 @@
 {
-  "_comment": "Recommended Realtime Database rules for Quy's Toolkit. Paste the contents of `rules` into Firebase Console -> Realtime Database -> Rules. Super admin is gated by email (khucxuanquy@gmail.com); other admins self-register from an invite stored under inviteEmails. The client-side gate in the app is UX only -- these rules are the real protection for who can READ feedback and WRITE admin data. Guests (not signed in) can still use Music Room and submit feedback.",
+  "_comment": "Realtime Database rules for Quy's Toolkit. Paste the contents of `rules` into Firebase Console -> Realtime Database -> Rules -> Publish. Sensitive nodes (admins, inviteEmails, feedback, announcement, presence, leaderboard) stay locked down. Everything else -- any current or FUTURE realtime tool (rooms, games, shared state) -- is matched by the `$other` wildcard and gets public read/write, so new tools work without ever editing these rules again. Named rules take precedence over the wildcard, so the locked nodes remain protected.",
   "rules": {
     "presence": {
       ".read": true,
@@ -11,21 +11,6 @@
       "$game": {
         "$uid": { ".write": "auth != null && auth.uid === $uid" }
       }
-    },
-
-    "musicRooms": {
-      ".read": true,
-      ".write": true
-    },
-
-    "drawRooms": {
-      ".read": true,
-      ".write": true
-    },
-
-    "quizRooms": {
-      ".read": true,
-      ".write": true
     },
 
     "feedback": {
@@ -53,6 +38,11 @@
       "$emailKey": {
         ".write": "auth != null && (root.child('admins').child(auth.uid).child('role').val() === 'super' || (auth.token.email != null && auth.token.email.replace('.', ',') === $emailKey))"
       }
+    },
+
+    "$other": {
+      ".read": true,
+      ".write": true
     }
   }
 }
