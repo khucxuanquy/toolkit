@@ -24,6 +24,8 @@ export interface WeatherData {
   };
   hourly: HourlyPoint[];
   daily: DailyPoint[];
+  /** True when the daily series comes from the seasonal model (estimated). */
+  estimated: boolean;
 }
 
 export interface HourlyPoint {
@@ -47,18 +49,31 @@ export interface DailyPoint {
   sunset: string;
 }
 
+export type ForecastDays = 7 | 15 | 30;
+
 const GEO_URL = "https://geocoding-api.open-meteo.com/v1/search";
 const WEATHER_URL = "https://api.open-meteo.com/v1/forecast";
+const SEASONAL_URL = "https://seasonal-api.open-meteo.com/v1/seasonal";
 
-export async function searchCity(query: string): Promise<GeoResult[]> {
-  const url = `${GEO_URL}?name=${encodeURIComponent(query)}&count=6&language=vi&format=json`;
+export async function searchCity(query: string, lang = "en"): Promise<GeoResult[]> {
+  const url = `${GEO_URL}?name=${encodeURIComponent(query)}&count=6&language=${lang}&format=json`;
   const res = await fetch(url);
   if (!res.ok) return [];
   const data = (await res.json()) as { results?: GeoResult[] };
   return data.results ?? [];
 }
 
-export async function fetchWeather(lat: number, lon: number): Promise<WeatherData> {
+/** Rough WMO code derived from daily precipitation (seasonal model has no code). */
+function codeFromPrecip(precip: number): number {
+  if (precip >= 10) return 65; // heavy rain
+  if (precip >= 2) return 61; // rain
+  if (precip >= 0.3) return 51; // drizzle
+  return 1; // mainly clear
+}
+
+export async function fetchWeather(lat: number, lon: number, days: ForecastDays): Promise<WeatherData> {
+  // The standard model covers current conditions, hourly, and up to 16 daily days.
+  const stdDays = Math.min(days, 16);
   const params = new URLSearchParams({
     latitude: String(lat),
     longitude: String(lon),
@@ -87,7 +102,7 @@ export async function fetchWeather(lat: number, lon: number): Promise<WeatherDat
       "sunset",
     ].join(","),
     timezone: "auto",
-    forecast_days: "7",
+    forecast_days: String(stdDays),
     forecast_hours: "24",
   });
   const res = await fetch(`${WEATHER_URL}?${params}`);
@@ -96,39 +111,131 @@ export async function fetchWeather(lat: number, lon: number): Promise<WeatherDat
   const c = d.current;
   const h = d.hourly;
   const dd = d.daily;
-  return {
-    current: {
-      temp: Math.round(c.temperature_2m),
-      feelsLike: Math.round(c.apparent_temperature),
-      humidity: c.relative_humidity_2m,
-      windSpeed: Math.round(c.wind_speed_10m),
-      windDirection: c.wind_direction_10m,
-      weatherCode: c.weather_code,
-      isDay: c.is_day === 1,
-      uvIndex: c.uv_index ?? 0,
-      visibility: Math.round((c.visibility ?? 0) / 1000),
-      pressure: Math.round(c.surface_pressure ?? 0),
-    },
-    hourly: h.time.map((t: string, i: number) => ({
+
+  const current = {
+    temp: Math.round(c.temperature_2m),
+    feelsLike: Math.round(c.apparent_temperature),
+    humidity: c.relative_humidity_2m,
+    windSpeed: Math.round(c.wind_speed_10m),
+    windDirection: c.wind_direction_10m,
+    weatherCode: c.weather_code,
+    isDay: c.is_day === 1,
+    uvIndex: c.uv_index ?? 0,
+    visibility: Math.round((c.visibility ?? 0) / 1000),
+    pressure: Math.round(c.surface_pressure ?? 0),
+  };
+
+  const hourly: HourlyPoint[] = h.time.map((t: string, i: number) => ({
+    time: t,
+    temp: Math.round(h.temperature_2m[i]),
+    weatherCode: h.weather_code[i],
+    precipProb: h.precipitation_probability[i] ?? 0,
+    isDay: h.is_day[i] === 1,
+  }));
+
+  let daily: DailyPoint[] = dd.time.map((t: string, i: number) => ({
+    time: t,
+    weatherCode: dd.weather_code[i],
+    tempMax: Math.round(dd.temperature_2m_max[i]),
+    tempMin: Math.round(dd.temperature_2m_min[i]),
+    precipSum: dd.precipitation_sum[i] ?? 0,
+    precipProb: dd.precipitation_probability_max[i] ?? 0,
+    windMax: Math.round(dd.wind_speed_10m_max[i]),
+    uvIndex: dd.uv_index_max[i] ?? 0,
+    sunrise: dd.sunrise[i],
+    sunset: dd.sunset[i],
+  }));
+
+  let estimated = false;
+
+  // For ranges beyond the 16-day standard limit, use the seasonal ensemble model.
+  if (days > 16) {
+    try {
+      daily = await fetchSeasonalDaily(lat, lon, days);
+      estimated = true;
+    } catch {
+      // Fall back to whatever the standard model returned.
+    }
+  }
+
+  return { current, hourly, daily, estimated };
+}
+
+/**
+ * Fetch only the multi-day forecast (without re-requesting current/hourly).
+ * Used when the user switches the 7/15/30-day range so only that section reloads.
+ */
+export async function fetchDaily(
+  lat: number,
+  lon: number,
+  days: ForecastDays,
+): Promise<{ daily: DailyPoint[]; estimated: boolean }> {
+  if (days > 16) {
+    const daily = await fetchSeasonalDaily(lat, lon, days);
+    return { daily, estimated: true };
+  }
+  const params = new URLSearchParams({
+    latitude: String(lat),
+    longitude: String(lon),
+    daily: [
+      "weather_code",
+      "temperature_2m_max",
+      "temperature_2m_min",
+      "precipitation_sum",
+      "precipitation_probability_max",
+      "wind_speed_10m_max",
+      "uv_index_max",
+      "sunrise",
+      "sunset",
+    ].join(","),
+    timezone: "auto",
+    forecast_days: String(days),
+  });
+  const res = await fetch(`${WEATHER_URL}?${params}`);
+  if (!res.ok) throw new Error("daily_fetch_failed");
+  const dd = (await res.json()).daily;
+  const daily: DailyPoint[] = dd.time.map((t: string, i: number) => ({
+    time: t,
+    weatherCode: dd.weather_code[i],
+    tempMax: Math.round(dd.temperature_2m_max[i]),
+    tempMin: Math.round(dd.temperature_2m_min[i]),
+    precipSum: dd.precipitation_sum[i] ?? 0,
+    precipProb: dd.precipitation_probability_max[i] ?? 0,
+    windMax: Math.round(dd.wind_speed_10m_max[i]),
+    uvIndex: dd.uv_index_max[i] ?? 0,
+    sunrise: dd.sunrise[i],
+    sunset: dd.sunset[i],
+  }));
+  return { daily, estimated: false };
+}
+
+async function fetchSeasonalDaily(lat: number, lon: number, days: number): Promise<DailyPoint[]> {
+  const params = new URLSearchParams({
+    latitude: String(lat),
+    longitude: String(lon),
+    daily: ["temperature_2m_max", "temperature_2m_min", "precipitation_sum"].join(","),
+    timezone: "auto",
+    forecast_days: String(days),
+  });
+  const res = await fetch(`${SEASONAL_URL}?${params}`);
+  if (!res.ok) throw new Error("seasonal_fetch_failed");
+  const d = await res.json();
+  const dd = d.daily;
+  return dd.time.map((t: string, i: number) => {
+    const precip = dd.precipitation_sum?.[i] ?? 0;
+    return {
       time: t,
-      temp: Math.round(h.temperature_2m[i]),
-      weatherCode: h.weather_code[i],
-      precipProb: h.precipitation_probability[i] ?? 0,
-      isDay: h.is_day[i] === 1,
-    })),
-    daily: dd.time.map((t: string, i: number) => ({
-      time: t,
-      weatherCode: dd.weather_code[i],
+      weatherCode: codeFromPrecip(precip),
       tempMax: Math.round(dd.temperature_2m_max[i]),
       tempMin: Math.round(dd.temperature_2m_min[i]),
-      precipSum: dd.precipitation_sum[i] ?? 0,
-      precipProb: dd.precipitation_probability_max[i] ?? 0,
-      windMax: Math.round(dd.wind_speed_10m_max[i]),
-      uvIndex: dd.uv_index_max[i] ?? 0,
-      sunrise: dd.sunrise[i],
-      sunset: dd.sunset[i],
-    })),
-  };
+      precipSum: precip,
+      precipProb: 0,
+      windMax: 0,
+      uvIndex: 0,
+      sunrise: "",
+      sunset: "",
+    } as DailyPoint;
+  });
 }
 
 /** WMO weather code → { label_vi, label_en, icon, emoji } */
@@ -153,8 +260,10 @@ export function wmoInfo(code: number, isDay = true): WMOInfo {
   return { vi: "Giông bão", en: "Thunderstorm", icon: "CloudLightning", emoji: "⛈️" };
 }
 
-export function windDir(deg: number): string {
-  const dirs = ["B", "ĐB", "Đ", "ĐN", "N", "TN", "T", "TB"];
+export function windDir(deg: number, lang: string): string {
+  const vi = ["B", "ĐB", "Đ", "ĐN", "N", "TN", "T", "TB"];
+  const en = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"];
+  const dirs = lang === "vi" ? vi : en;
   return dirs[Math.round(deg / 45) % 8];
 }
 
