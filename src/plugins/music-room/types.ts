@@ -5,6 +5,9 @@ export interface MusicRoom {
   createdAt: number;
   /** Last time someone was active in the room; rooms idle >24h are pruned. */
   lastActive?: number;
+  /** Creator's user id + display name (the room owner). */
+  createdBy?: string;
+  createdByName?: string;
 }
 
 export interface RoomPresence {

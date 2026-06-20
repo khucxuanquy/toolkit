@@ -30,6 +30,8 @@ function rp(code: string) {
 export async function createRoom(
   name: string,
   visibility: "public" | "private",
+  createdBy?: string,
+  createdByName?: string,
 ): Promise<string> {
   const db = getRtdb();
   if (!db) throw new Error("mr.noDb");
@@ -40,6 +42,8 @@ export async function createRoom(
     visibility,
     createdAt: Date.now(),
     lastActive: Date.now(),
+    createdBy: createdBy ?? null,
+    createdByName: createdByName ?? null,
   });
   await set(ref(db, `${rp(code)}/playerState`), {
     currentItemId: null,

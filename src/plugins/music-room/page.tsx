@@ -18,7 +18,15 @@ import { getRtdb } from "@/core/firebase/app";
 import { checkRoomExists, createRoom, pruneStaleRooms, useFirebaseRoom } from "./useFirebaseRoom";
 import { ensureYtApi, searchYouTube, youtubeSearchEnabled, type YTPlayer } from "./youtube";
 import { isMediaUrl, type MediaMeta, type Source } from "./sources";
-import type { MusicChatMessage, MusicQueueItem, MusicRoom, RoomPresence } from "./types";
+import type { MusicChatMessage, MusicPlayerState, MusicQueueItem, MusicRoom, RoomPresence } from "./types";
+
+/** Lobby room entry enriched with live activity from the same snapshot. */
+interface RoomInfo {
+  meta: MusicRoom;
+  listeners: number;
+  queueCount: number;
+  nowPlaying: { title: string; source: Source } | null;
+}
 
 // ── Source visual identity ────────────────────────────────────────────────────
 const SOURCE_ICON: Record<Source, string> = {
@@ -862,10 +870,18 @@ function RoomView({
 }
 
 // ── Room browser (home view) ──────────────────────────────────────────────────
-function RoomBrowser({ onEnter }: { onEnter: (code: string) => void }) {
+function RoomBrowser({
+  onEnter,
+  userId,
+  userName,
+}: {
+  onEnter: (code: string) => void;
+  userId: string;
+  userName: string;
+}) {
   const { t } = useTranslation();
   const toast = useToast();
-  const [rooms, setRooms] = useState<MusicRoom[]>([]);
+  const [rooms, setRooms] = useState<RoomInfo[]>([]);
   const [creating, setCreating] = useState(false);
   const [newName, setNewName] = useState("");
   const [newVis, setNewVis] = useState<"public" | "private">("public");
@@ -878,24 +894,44 @@ function RoomBrowser({ onEnter }: { onEnter: (code: string) => void }) {
   useEffect(() => {
     if (!db) return;
     return onValue(ref(db, "musicRooms"), (snap) => {
-      const val = (snap.val() ?? {}) as Record<string, { meta?: MusicRoom }>;
-      const all = Object.values(val)
-        .map((v) => v.meta)
-        .filter((m): m is MusicRoom => !!m);
+      const val = (snap.val() ?? {}) as Record<
+        string,
+        {
+          meta?: MusicRoom;
+          presence?: Record<string, unknown>;
+          queue?: Record<string, Partial<MusicQueueItem>>;
+          playerState?: MusicPlayerState;
+        }
+      >;
+      // Build enriched entries (listeners, queue size, now-playing) from the
+      // same snapshot — no extra reads.
+      const all: RoomInfo[] = Object.values(val)
+        .filter((v) => !!v.meta)
+        .map((v) => {
+          const queue = v.queue ?? {};
+          const currentId = v.playerState?.currentItemId ?? null;
+          const cur = currentId ? queue[currentId] : null;
+          return {
+            meta: v.meta as MusicRoom,
+            listeners: Object.keys(v.presence ?? {}).length,
+            queueCount: Object.keys(queue).length,
+            nowPlaying: cur ? { title: cur.title ?? "", source: srcOf(cur) } : null,
+          };
+        });
       // Delete rooms idle for >24h and drop them from the list immediately.
-      const removed = new Set(pruneStaleRooms(all));
+      const removed = new Set(pruneStaleRooms(all.map((a) => a.meta)));
       const list = all
-        .filter((m) => !removed.has(m.code))
-        .sort((a, b) => b.createdAt - a.createdAt)
+        .filter((a) => !removed.has(a.meta.code))
+        .sort((a, b) => b.meta.createdAt - a.meta.createdAt)
         .slice(0, 30);
       setRooms(list);
     });
   }, [db]);
 
   // Private rooms are listed but locked: clicking opens a modal asking for the
-  // invite code, which must match the room's code to enter.
+  // invite code. The room's own creator skips the code prompt.
   const handleRoomClick = (r: MusicRoom) => {
-    if (r.visibility === "private") {
+    if (r.visibility === "private" && r.createdBy !== userId) {
       setLockedRoom(r);
       setUnlockInput("");
     } else {
@@ -912,7 +948,7 @@ function RoomBrowser({ onEnter }: { onEnter: (code: string) => void }) {
   const handleCreate = async () => {
     setCreating(true);
     try {
-      const code = await createRoom(newName, newVis);
+      const code = await createRoom(newName, newVis, userId, userName);
       setNewName("");
       onEnter(code);
     } catch {
@@ -1016,7 +1052,7 @@ function RoomBrowser({ onEnter }: { onEnter: (code: string) => void }) {
           <p className="text-muted text-sm">{t("mr.noRooms")}</p>
         ) : (
           <div className="grid gap-2 sm:grid-cols-2">
-            {rooms.map((r) => {
+            {rooms.map(({ meta: r, listeners, queueCount, nowPlaying }) => {
               const isPrivate = r.visibility === "private";
               return (
                 <button
@@ -1031,17 +1067,39 @@ function RoomBrowser({ onEnter }: { onEnter: (code: string) => void }) {
                   />
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-medium">{r.name}</p>
-                    <p className="text-muted text-xs">
+                    <p className="text-muted truncate text-xs">
                       {isPrivate ? (
                         <span className="inline-flex items-center gap-1">
-                          <Icon name="Lock" size={11} /> {t("mr.private")}
+                          <Icon name="Lock" size={11} />
+                          {r.createdByName
+                            ? t("mr.hostedBy", { name: r.createdBy === userId ? t("mr.you") : r.createdByName })
+                            : t("mr.private")}
                         </span>
                       ) : (
                         <span className="font-mono">{r.code}</span>
                       )}
                     </p>
+                    {/* live activity */}
+                    <div className="text-muted mt-1 flex items-center gap-3 text-[11px]">
+                      <span className="inline-flex items-center gap-1" title={t("mr.online")}>
+                        <Icon name="Users" size={11} /> {listeners}
+                      </span>
+                      <span className="inline-flex items-center gap-1" title={t("mr.queue")}>
+                        <Icon name="Music" size={11} /> {queueCount}
+                      </span>
+                    </div>
+                    {nowPlaying && (
+                      <p className="mt-1 flex items-center gap-1 text-[11px] text-primary truncate">
+                        <Icon name={SOURCE_ICON[nowPlaying.source]} size={11} className="shrink-0" />
+                        <span className="truncate">{nowPlaying.title}</span>
+                      </p>
+                    )}
                   </div>
-                  <Icon name="ChevronRight" size={16} className="text-muted shrink-0" />
+                  <Icon
+                    name={isPrivate && r.createdBy !== userId ? "Lock" : "ChevronRight"}
+                    size={16}
+                    className="text-muted shrink-0 self-center"
+                  />
                 </button>
               );
             })}
@@ -1163,5 +1221,5 @@ export default function MusicRoomPage() {
     );
   }
 
-  return <RoomBrowser onEnter={handleEnter} />;
+  return <RoomBrowser onEnter={handleEnter} userId={userId} userName={userName} />;
 }
