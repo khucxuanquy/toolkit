@@ -520,6 +520,20 @@ const vi: Dict = {
   "su.solvedMsg": "Bạn đã giải xong trong {time}.",
   "su.newBest": "Kỷ lục mới! 🎉",
 
+  // Weather
+  "wt.error": "Không thể tải dữ liệu thời tiết. Kiểm tra kết nối mạng.",
+  "wt.feelsLike": "Cảm giác như",
+  "wt.humidity": "Độ ẩm",
+  "wt.wind": "Gió",
+  "wt.visibility": "Tầm nhìn",
+  "wt.pressure": "Áp suất",
+  "wt.hourly": "Theo giờ",
+  "wt.daily": "7 ngày tới",
+  "wt.locate": "Dùng vị trí hiện tại",
+  "wt.refresh": "Làm mới",
+  "wt.currentLocation": "Vị trí của bạn",
+  "wt.freeSource": "Dữ liệu miễn phí từ Open-Meteo",
+
   // Draw & Guess
   "dg.title": "Vẽ & Đoán",
   "dg.createRoom": "Tạo phòng",
@@ -537,6 +551,16 @@ const vi: Dict = {
   "dg.guessPlaceholder": "Nhập câu trả lời...",
   "dg.youDraw": "Bạn đang vẽ — đừng nói ra đáp án nhé!",
   "dg.waitTurn": "Chờ lượt tiếp theo...",
+
+  // Quiz Party
+  "qz.title": "Đố Vui",
+  "qz.createRoom": "Tạo phòng",
+  "qz.pickPack": "Chọn bộ câu hỏi:",
+  "qz.loaded": "Đã nạp {n} câu hỏi.",
+  "qz.waitHost": "Chờ chủ phòng bắt đầu...",
+  "qz.qOf": "Câu {i}/{n}",
+  "qz.answered": "Đã trả lời!",
+  "qz.answeredCount": "{a}/{n} đã trả lời",
 };
 
 const en: Dict = {
@@ -1043,6 +1067,20 @@ const en: Dict = {
   "su.solvedMsg": "You solved it in {time}.",
   "su.newBest": "New best time! 🎉",
 
+  // Weather
+  "wt.error": "Could not load weather data. Check your network connection.",
+  "wt.feelsLike": "Feels like",
+  "wt.humidity": "Humidity",
+  "wt.wind": "Wind",
+  "wt.visibility": "Visibility",
+  "wt.pressure": "Pressure",
+  "wt.hourly": "Hourly",
+  "wt.daily": "7-day forecast",
+  "wt.locate": "Use current location",
+  "wt.refresh": "Refresh",
+  "wt.currentLocation": "Your location",
+  "wt.freeSource": "Free data from Open-Meteo",
+
   // Draw & Guess
   "dg.title": "Draw & Guess",
   "dg.createRoom": "Create room",
@@ -1060,6 +1098,16 @@ const en: Dict = {
   "dg.guessPlaceholder": "Type your guess...",
   "dg.youDraw": "You're drawing — don't reveal the word!",
   "dg.waitTurn": "Waiting for the next turn...",
+
+  // Quiz Party
+  "qz.title": "Quiz Party",
+  "qz.createRoom": "Create room",
+  "qz.pickPack": "Pick a question pack:",
+  "qz.loaded": "Loaded {n} questions.",
+  "qz.waitHost": "Waiting for the host to start...",
+  "qz.qOf": "Question {i}/{n}",
+  "qz.answered": "Answer locked in!",
+  "qz.answeredCount": "{a}/{n} answered",
 };
 
 export const dictionaries: Record<Locale, Dict> = { vi, en };
