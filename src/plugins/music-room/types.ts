@@ -3,6 +3,8 @@ export interface MusicRoom {
   name: string;
   visibility: "public" | "private";
   createdAt: number;
+  /** Last time someone was active in the room; rooms idle >24h are pruned. */
+  lastActive?: number;
 }
 
 export interface RoomPresence {

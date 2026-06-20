@@ -9,13 +9,13 @@ import {
   useState,
 } from "react";
 import { onValue, ref } from "firebase/database";
-import { Button, Card, CardBody, Icon, Input, useToast } from "@/shared/ui";
+import { Button, Card, CardBody, Icon, Input, Modal, useToast } from "@/shared/ui";
 import { useTranslation } from "@/core/i18n/useTranslation";
 import { cn } from "@/shared/utils/cn";
 import { useAuthStore } from "@/core/auth/auth-store";
 import { realtimeEnabled } from "@/core/firebase/config";
 import { getRtdb } from "@/core/firebase/app";
-import { checkRoomExists, createRoom, useFirebaseRoom } from "./useFirebaseRoom";
+import { checkRoomExists, createRoom, pruneStaleRooms, useFirebaseRoom } from "./useFirebaseRoom";
 import { ensureYtApi, searchYouTube, youtubeSearchEnabled, type YTPlayer } from "./youtube";
 import { isMediaUrl, type MediaMeta, type Source } from "./sources";
 import type { MusicChatMessage, MusicQueueItem, MusicRoom, RoomPresence } from "./types";
@@ -501,9 +501,19 @@ function ChatPanel({
           }
           const mine = m.userId === userId;
           const prev = messages[i - 1];
-          // Group consecutive messages from the same author (within 5 min).
-          const grouped =
-            prev && !prev.isSystem && prev.userId === m.userId && m.createdAt - prev.createdAt < 3e5;
+          const next = messages[i + 1];
+          const GAP = 3e5; // 5 minutes
+          // First/last message in a run of consecutive messages from one author.
+          const firstOfGroup =
+            !prev || prev.isSystem || prev.userId !== m.userId || m.createdAt - prev.createdAt >= GAP;
+          const lastOfGroup =
+            !next || next.isSystem || next.userId !== m.userId || next.createdAt - m.createdAt >= GAP;
+
+          // Messenger-style corner rounding: only the group's outer corners on the
+          // author's side stay round; inner ones flatten so the run reads as one.
+          const corner = mine
+            ? cn(firstOfGroup ? "rounded-tr-2xl" : "rounded-tr-md", lastOfGroup ? "rounded-br-2xl" : "rounded-br-md")
+            : cn(firstOfGroup ? "rounded-tl-2xl" : "rounded-tl-md", lastOfGroup ? "rounded-bl-2xl" : "rounded-bl-md");
 
           return (
             <div
@@ -511,33 +521,32 @@ function ChatPanel({
               className={cn(
                 "flex items-end gap-2",
                 mine && "flex-row-reverse",
-                grouped ? "mt-0.5" : "mt-2",
+                firstOfGroup ? "mt-2.5" : "mt-0.5",
               )}
             >
+              {/* avatar sits with the last bubble of the group (Messenger style) */}
               <div className="w-7 shrink-0">
-                {!grouped && (
+                {!mine && lastOfGroup && (
                   <ChatAvatar name={m.userName} avatarUrl={presence[m.userId]?.avatarUrl} />
                 )}
               </div>
               <div className={cn("flex max-w-[75%] flex-col", mine && "items-end")}>
-                {!grouped && (
-                  <span className="text-muted mb-0.5 px-1 text-[11px] font-medium">
-                    {mine ? t("mr.you") : m.userName}
-                  </span>
+                {firstOfGroup && !mine && (
+                  <span className="text-muted mb-0.5 px-1 text-[11px] font-medium">{m.userName}</span>
                 )}
                 <div
                   className={cn(
                     "group/msg relative rounded-2xl px-3 py-1.5 text-sm break-words",
-                    mine
-                      ? "bg-primary rounded-br-md text-white"
-                      : "bg-surface-2 text-foreground rounded-bl-md",
+                    corner,
+                    mine ? "bg-primary text-white" : "bg-surface-2 text-foreground",
                   )}
                 >
                   {m.text}
+                  {/* hover timestamp, on the side away from the bubble */}
                   <span
                     className={cn(
-                      "pointer-events-none absolute -bottom-4 text-[10px] opacity-0 transition-opacity group-hover/msg:opacity-100",
-                      mine ? "right-1 text-muted" : "left-1 text-muted",
+                      "text-muted pointer-events-none absolute top-1/2 -translate-y-1/2 whitespace-nowrap text-[10px] opacity-0 transition-opacity group-hover/msg:opacity-100",
+                      mine ? "right-full mr-2" : "left-full ml-2",
                     )}
                   >
                     {fmtTime(m.createdAt)}
@@ -609,6 +618,7 @@ function RoomView({
   onLeave: () => void;
 }) {
   const { t } = useTranslation();
+  const toast = useToast();
   const ytRef = useRef<YTHandle>(null);
   const progressRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -706,6 +716,26 @@ function RoomView({
               </span>
             )}
           </div>
+          {/* Host sees the invite code so they can share it (esp. private rooms). */}
+          {isHost && (
+            <button
+              onClick={async () => {
+                try {
+                  await navigator.clipboard.writeText(roomCode);
+                  toast(t("mr.codeCopied"), "success");
+                } catch {
+                  /* clipboard may be unavailable */
+                }
+              }}
+              title={t("mr.copyCode")}
+              className="border-border bg-surface-2 hover:bg-surface mt-1 inline-flex items-center gap-1.5 rounded-lg border px-2 py-1 transition-colors"
+            >
+              <Icon name={room?.visibility === "private" ? "Lock" : "Link"} size={12} className="text-muted" />
+              <span className="text-muted text-[10px]">{t("mr.inviteCode")}</span>
+              <span className="font-mono text-xs font-semibold tracking-widest">{roomCode}</span>
+              <Icon name="Copy" size={12} className="text-muted" />
+            </button>
+          )}
         </div>
         <PresenceBar presence={presence} hostId={hostId} />
         <Button variant="outline" size="sm" onClick={onLeave}>
@@ -841,20 +871,43 @@ function RoomBrowser({ onEnter }: { onEnter: (code: string) => void }) {
   const [newVis, setNewVis] = useState<"public" | "private">("public");
   const [joinCode, setJoinCode] = useState("");
   const [joining, setJoining] = useState(false);
+  const [lockedRoom, setLockedRoom] = useState<MusicRoom | null>(null);
+  const [unlockInput, setUnlockInput] = useState("");
   const db = getRtdb();
 
   useEffect(() => {
     if (!db) return;
     return onValue(ref(db, "musicRooms"), (snap) => {
       const val = (snap.val() ?? {}) as Record<string, { meta?: MusicRoom }>;
-      const list = Object.values(val)
+      const all = Object.values(val)
         .map((v) => v.meta)
-        .filter((m): m is MusicRoom => !!m && m.visibility === "public")
+        .filter((m): m is MusicRoom => !!m);
+      // Delete rooms idle for >24h and drop them from the list immediately.
+      const removed = new Set(pruneStaleRooms(all));
+      const list = all
+        .filter((m) => !removed.has(m.code))
         .sort((a, b) => b.createdAt - a.createdAt)
-        .slice(0, 20);
+        .slice(0, 30);
       setRooms(list);
     });
   }, [db]);
+
+  // Private rooms are listed but locked: clicking opens a modal asking for the
+  // invite code, which must match the room's code to enter.
+  const handleRoomClick = (r: MusicRoom) => {
+    if (r.visibility === "private") {
+      setLockedRoom(r);
+      setUnlockInput("");
+    } else {
+      onEnter(r.code);
+    }
+  };
+
+  const submitUnlock = () => {
+    if (!lockedRoom) return;
+    if (unlockInput.trim().toUpperCase() === lockedRoom.code) onEnter(lockedRoom.code);
+    else toast(t("mr.wrongCode"), "error");
+  };
 
   const handleCreate = async () => {
     setCreating(true);
@@ -956,30 +1009,72 @@ function RoomBrowser({ onEnter }: { onEnter: (code: string) => void }) {
         </Card>
       </div>
 
-      {/* Public rooms */}
+      {/* Rooms */}
       <div>
-        <h3 className="mb-3 font-semibold">{t("mr.publicRooms")}</h3>
+        <h3 className="mb-3 font-semibold">{t("mr.rooms")}</h3>
         {rooms.length === 0 ? (
           <p className="text-muted text-sm">{t("mr.noRooms")}</p>
         ) : (
           <div className="grid gap-2 sm:grid-cols-2">
-            {rooms.map((r) => (
-              <button
-                key={r.code}
-                onClick={() => onEnter(r.code)}
-                className="border-border bg-surface hover:bg-surface-2 flex items-center gap-3 rounded-xl border p-3 text-left transition-colors"
-              >
-                <Icon name="Music" size={20} className="text-primary shrink-0" />
-                <div className="min-w-0 flex-1">
-                  <p className="truncate font-medium">{r.name}</p>
-                  <p className="text-muted text-xs font-mono">{r.code}</p>
-                </div>
-                <Icon name="ChevronRight" size={16} className="text-muted shrink-0" />
-              </button>
-            ))}
+            {rooms.map((r) => {
+              const isPrivate = r.visibility === "private";
+              return (
+                <button
+                  key={r.code}
+                  onClick={() => handleRoomClick(r)}
+                  className="border-border bg-surface hover:bg-surface-2 flex items-center gap-3 rounded-xl border p-3 text-left transition-colors"
+                >
+                  <Icon
+                    name={isPrivate ? "Lock" : "Music"}
+                    size={20}
+                    className={cn("shrink-0", isPrivate ? "text-warning" : "text-primary")}
+                  />
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-medium">{r.name}</p>
+                    <p className="text-muted text-xs">
+                      {isPrivate ? (
+                        <span className="inline-flex items-center gap-1">
+                          <Icon name="Lock" size={11} /> {t("mr.private")}
+                        </span>
+                      ) : (
+                        <span className="font-mono">{r.code}</span>
+                      )}
+                    </p>
+                  </div>
+                  <Icon name="ChevronRight" size={16} className="text-muted shrink-0" />
+                </button>
+              );
+            })}
           </div>
         )}
       </div>
+
+      {/* Private-room code entry */}
+      <Modal
+        open={!!lockedRoom}
+        onClose={() => setLockedRoom(null)}
+        title={
+          <span className="flex items-center gap-2">
+            <Icon name="Lock" size={16} className="text-warning" /> {lockedRoom?.name}
+          </span>
+        }
+      >
+        <div className="space-y-4">
+          <p className="text-muted text-sm">{t("mr.privatePrompt")}</p>
+          <Input
+            autoFocus
+            value={unlockInput}
+            onChange={(e) => setUnlockInput(e.target.value.toUpperCase())}
+            placeholder={t("mr.enterCodeToJoin")}
+            maxLength={6}
+            className="tracking-[0.4em] text-center font-mono text-lg uppercase"
+            onKeyDown={(e) => e.key === "Enter" && submitUnlock()}
+          />
+          <Button className="w-full" onClick={submitUnlock} disabled={!unlockInput.trim()}>
+            <Icon name="DoorOpen" size={16} /> {t("mr.enter")}
+          </Button>
+        </div>
+      </Modal>
     </div>
   );
 }

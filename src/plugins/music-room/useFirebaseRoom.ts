@@ -39,6 +39,7 @@ export async function createRoom(
     name: name.trim() || "Phòng nhạc",
     visibility,
     createdAt: Date.now(),
+    lastActive: Date.now(),
   });
   await set(ref(db, `${rp(code)}/playerState`), {
     currentItemId: null,
@@ -55,6 +56,23 @@ export async function checkRoomExists(code: string): Promise<boolean> {
   if (!db) return false;
   const snap = await get(ref(db, `${rp(code)}/meta`));
   return snap.exists();
+}
+
+/** Rooms with no activity for this long are deleted. */
+export const ROOM_TTL_MS = 24 * 60 * 60 * 1000;
+
+/**
+ * Delete rooms that have been idle longer than {@link ROOM_TTL_MS}. Called from
+ * the lobby with the already-loaded room metas so it costs no extra reads.
+ * Returns the codes that were removed.
+ */
+export function pruneStaleRooms(rooms: MusicRoom[]): string[] {
+  const db = getRtdb();
+  if (!db) return [];
+  const now = Date.now();
+  const stale = rooms.filter((r) => now - (r.lastActive ?? r.createdAt) > ROOM_TTL_MS);
+  for (const r of stale) void remove(ref(db, rp(r.code)));
+  return stale.map((r) => r.code);
 }
 
 // ── Hook ─────────────────────────────────────────────────────────────────────
@@ -116,7 +134,14 @@ export function useFirebaseRoom(
       joinedAt: Date.now(),
     } satisfies RoomPresence);
     void onDisconnect(presRef).remove();
+
+    // Keep the room "alive" so it isn't pruned while someone is here.
+    const touch = () => void update(ref(db, `${base}/meta`), { lastActive: Date.now() });
+    touch();
+    const beat = setInterval(touch, 5 * 60 * 1000);
+
     return () => {
+      clearInterval(beat);
       void remove(presRef);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
