@@ -5,6 +5,7 @@ import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { useAuthStore } from "@/core/auth/auth-store";
 import { useTranslation } from "@/core/i18n/useTranslation";
+import { useIsAdmin } from "@/core/admin/useIsAdmin";
 import { Icon, useToast } from "@/shared/ui";
 import { cn } from "@/shared/utils/cn";
 import { ProfileDialog } from "./ProfileDialog";
@@ -44,6 +45,7 @@ export function AccountMenu() {
   const user = useAuthStore((s) => s.user);
   const hydrated = useAuthStore((s) => s.hydrated);
   const signOut = useAuthStore((s) => s.signOut);
+  const { isAdmin } = useIsAdmin();
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -104,6 +106,15 @@ export function AccountMenu() {
               </div>
             </div>
             <div className="bg-border my-1 h-px" />
+            {isAdmin && (
+              <Link
+                href="/admin"
+                onClick={() => setOpen(false)}
+                className="text-primary hover:bg-surface-2 flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-medium"
+              >
+                <Icon name="Shield" size={16} /> {t("admin.title")}
+              </Link>
+            )}
             <button
               onClick={() => {
                 setOpen(false);

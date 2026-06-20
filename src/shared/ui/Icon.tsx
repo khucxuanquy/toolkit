@@ -80,6 +80,11 @@ import {
   Wifi,
   DoorOpen,
   ChevronRight,
+  MessageSquare,
+  Megaphone,
+  Shield,
+  Inbox,
+  UserPlus,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/shared/utils/cn";
@@ -170,6 +175,11 @@ export const ICONS = {
   Wifi,
   DoorOpen,
   ChevronRight,
+  MessageSquare,
+  Megaphone,
+  Shield,
+  Inbox,
+  UserPlus,
 } satisfies Record<string, LucideIcon>;
 
 export type IconName = keyof typeof ICONS;

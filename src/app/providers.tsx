@@ -7,6 +7,7 @@ import { usePlatformStore } from "@/core/services/platform-store";
 import { useAuthStore } from "@/core/auth/auth-store";
 import { PwaManager } from "@/core/services/PwaManager";
 import { Toaster } from "@/shared/ui";
+import { FeedbackButton } from "@/shared/components/FeedbackButton";
 import { firebaseEnabled } from "@/core/firebase/config";
 
 export function Providers({ children }: { children: ReactNode }) {
@@ -27,6 +28,7 @@ export function Providers({ children }: { children: ReactNode }) {
   return (
     <>
       {children}
+      <FeedbackButton />
       <Toaster />
       <PwaManager />
     </>
