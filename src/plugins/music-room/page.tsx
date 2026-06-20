@@ -16,7 +16,14 @@ import { useAuthStore } from "@/core/auth/auth-store";
 import { realtimeEnabled } from "@/core/firebase/config";
 import { getRtdb } from "@/core/firebase/app";
 import { checkRoomExists, createRoom, useFirebaseRoom } from "./useFirebaseRoom";
-import { ensureYtApi, type YTPlayer } from "./youtube";
+import {
+  ensureYtApi,
+  searchYouTube,
+  watchUrl,
+  youtubeSearchEnabled,
+  type VideoMeta,
+  type YTPlayer,
+} from "./youtube";
 import type { MusicChatMessage, MusicQueueItem, MusicRoom, RoomPresence } from "./types";
 
 // ── Guest ID (persisted in sessionStorage) ───────────────────────────────────
@@ -51,7 +58,9 @@ const YouTubePlayer = forwardRef<
   const containerRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<YTPlayer | null>(null);
   const onStateChangeRef = useRef(onStateChange);
-  onStateChangeRef.current = onStateChange;
+  useEffect(() => {
+    onStateChangeRef.current = onStateChange;
+  });
 
   useImperativeHandle(ref, () => ({
     play() {
@@ -107,6 +116,145 @@ const YouTubePlayer = forwardRef<
 });
 YouTubePlayer.displayName = "YouTubePlayer";
 
+// ── Add-song bar (search or paste URL) ────────────────────────────────────────
+function AddSongBar({
+  onAddUrl,
+  onAddMeta,
+}: {
+  onAddUrl: (url: string) => Promise<void>;
+  onAddMeta: (meta: VideoMeta) => Promise<void>;
+}) {
+  const { t } = useTranslation();
+  const toast = useToast();
+  const [text, setText] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [results, setResults] = useState<VideoMeta[]>([]);
+  const [searching, setSearching] = useState(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const isUrl = (s: string) => /youtube\.com|youtu\.be|^[A-Za-z0-9_-]{11}$/.test(s.trim());
+  const looksLikeUrl = isUrl(text);
+
+  // Clean up a pending debounce on unmount.
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, []);
+
+  // Debounced search, driven from the input's onChange (not an effect).
+  const handleChange = (value: string) => {
+    setText(value);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    const q = value.trim();
+    if (!youtubeSearchEnabled || !q || isUrl(value)) {
+      setResults([]);
+      setSearching(false);
+      return;
+    }
+    setSearching(true);
+    debounceRef.current = setTimeout(async () => {
+      try {
+        setResults(await searchYouTube(q));
+      } catch {
+        toast(t("mr.searchError"), "error");
+        setResults([]);
+      } finally {
+        setSearching(false);
+      }
+    }, 450);
+  };
+
+  const addUrl = async () => {
+    const trimmed = text.trim();
+    if (!trimmed) return;
+    setBusy(true);
+    try {
+      await onAddUrl(trimmed);
+      setText("");
+      setResults([]);
+    } catch {
+      toast(t("mr.errorUrl"), "error");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const addResult = async (meta: VideoMeta) => {
+    setBusy(true);
+    try {
+      await onAddMeta(meta);
+      setText("");
+      setResults([]);
+      toast(t("mr.added"), "success");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="relative">
+      <div className="flex gap-2">
+        <div className="relative flex-1">
+          <Icon
+            name={youtubeSearchEnabled ? "Search" : "Link"}
+            size={15}
+            className="text-muted pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2"
+          />
+          <Input
+            value={text}
+            onChange={(e) => handleChange(e.target.value)}
+            placeholder={youtubeSearchEnabled ? t("mr.searchPlaceholder") : t("mr.addPlaceholder")}
+            onKeyDown={(e) => e.key === "Enter" && looksLikeUrl && addUrl()}
+            className="pl-8 text-sm"
+          />
+          {searching && (
+            <Icon
+              name="Loader2"
+              size={14}
+              className="text-muted absolute right-2.5 top-1/2 -translate-y-1/2 animate-spin"
+            />
+          )}
+        </div>
+        {looksLikeUrl && (
+          <Button size="sm" onClick={addUrl} disabled={busy || !text.trim()}>
+            {busy ? (
+              <Icon name="Loader2" size={16} className="animate-spin" />
+            ) : (
+              <Icon name="Plus" size={16} />
+            )}
+          </Button>
+        )}
+      </div>
+
+      {/* Search results dropdown */}
+      {results.length > 0 && (
+        <div className="border-border bg-surface absolute z-20 mt-1 max-h-72 w-full overflow-y-auto rounded-xl border p-1 shadow-lg">
+          {results.map((r) => (
+            <button
+              key={r.sourceId}
+              onClick={() => addResult(r)}
+              disabled={busy}
+              className="hover:bg-surface-2 flex w-full items-center gap-2 rounded-lg p-1.5 text-left disabled:opacity-50"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={r.thumbnail} alt="" className="h-9 w-16 shrink-0 rounded object-cover" />
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm leading-tight">{r.title}</p>
+                <p className="text-muted truncate text-xs">
+                  {r.channel}
+                  {r.duration && <span> · {r.duration}</span>}
+                </p>
+              </div>
+              <Icon name="Plus" size={15} className="text-primary shrink-0" />
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Queue panel ───────────────────────────────────────────────────────────────
 function QueuePanel({
   queue,
@@ -114,53 +262,32 @@ function QueuePanel({
   isHost,
   onPlay,
   onRemove,
-  onAdd,
+  onAddUrl,
+  onAddMeta,
 }: {
   queue: MusicQueueItem[];
   currentItemId: string | null;
   isHost: boolean;
   onPlay: (id: string) => void;
   onRemove: (id: string) => void;
-  onAdd: (url: string) => Promise<void>;
+  onAddUrl: (url: string) => Promise<void>;
+  onAddMeta: (meta: VideoMeta) => Promise<void>;
 }) {
   const { t } = useTranslation();
   const toast = useToast();
-  const [url, setUrl] = useState("");
-  const [adding, setAdding] = useState(false);
 
-  const handleAdd = async () => {
-    const trimmed = url.trim();
-    if (!trimmed) return;
-    setAdding(true);
+  const copyUrl = async (sourceId: string) => {
     try {
-      await onAdd(trimmed);
-      setUrl("");
+      await navigator.clipboard.writeText(watchUrl(sourceId));
+      toast(t("mr.copied"), "success");
     } catch {
-      toast(t("mr.errorUrl"), "error");
-    } finally {
-      setAdding(false);
+      /* ignore */
     }
   };
 
   return (
     <div className="flex h-full flex-col gap-3">
-      {/* Add song */}
-      <div className="flex gap-2">
-        <Input
-          value={url}
-          onChange={(e) => setUrl(e.target.value)}
-          placeholder={t("mr.addPlaceholder")}
-          onKeyDown={(e) => e.key === "Enter" && handleAdd()}
-          className="flex-1 text-sm"
-        />
-        <Button size="sm" onClick={handleAdd} disabled={adding || !url.trim()}>
-          {adding ? (
-            <Icon name="Loader2" size={16} className="animate-spin" />
-          ) : (
-            <Icon name="Plus" size={16} />
-          )}
-        </Button>
-      </div>
+      <AddSongBar onAddUrl={onAddUrl} onAddMeta={onAddMeta} />
 
       {/* List */}
       <div className="min-h-0 flex-1 overflow-y-auto">
@@ -193,26 +320,38 @@ function QueuePanel({
                 />
                 <div className="min-w-0 flex-1">
                   <p className="truncate leading-tight">{item.title}</p>
-                  <p className="text-muted truncate text-xs">{item.channel}</p>
+                  <p className="text-muted truncate text-xs">
+                    {item.channel}
+                    {item.duration && <span> · {item.duration}</span>}
+                  </p>
                 </div>
-                {isHost && (
-                  <div className="flex shrink-0 gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-                    {item.id !== currentItemId && (
-                      <button
-                        onClick={() => onPlay(item.id)}
-                        className="text-muted hover:text-foreground"
-                      >
-                        <Icon name="Play" size={14} />
-                      </button>
-                    )}
+                <div className="flex shrink-0 gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                  <button
+                    onClick={() => copyUrl(item.sourceId)}
+                    className="text-muted hover:text-foreground"
+                    title={t("mr.copyUrl")}
+                  >
+                    <Icon name="Copy" size={14} />
+                  </button>
+                  {isHost && item.id !== currentItemId && (
+                    <button
+                      onClick={() => onPlay(item.id)}
+                      className="text-muted hover:text-foreground"
+                      title={t("mr.playNow")}
+                    >
+                      <Icon name="Play" size={14} />
+                    </button>
+                  )}
+                  {isHost && (
                     <button
                       onClick={() => onRemove(item.id)}
                       className="text-muted hover:text-danger"
+                      title={t("mr.remove")}
                     >
                       <Icon name="X" size={14} />
                     </button>
-                  </div>
-                )}
+                  )}
+                </div>
               </li>
             ))}
           </ol>
@@ -223,13 +362,32 @@ function QueuePanel({
 }
 
 // ── Chat panel ────────────────────────────────────────────────────────────────
+function ChatAvatar({ name, avatarUrl }: { name: string; avatarUrl?: string | null }) {
+  if (avatarUrl) {
+    // eslint-disable-next-line @next/next/no-img-element
+    return <img src={avatarUrl} alt="" className="h-7 w-7 shrink-0 rounded-full object-cover" />;
+  }
+  return (
+    <span className="from-primary to-accent flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br text-[11px] font-bold text-white">
+      {name.charAt(0).toUpperCase()}
+    </span>
+  );
+}
+
+function fmtTime(ms: number): string {
+  const d = new Date(ms);
+  return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+}
+
 function ChatPanel({
   messages,
   userId,
+  presence,
   onSend,
 }: {
   messages: MusicChatMessage[];
   userId: string;
+  presence: Record<string, RoomPresence>;
   onSend: (text: string) => void;
 }) {
   const { t } = useTranslation();
@@ -248,33 +406,66 @@ function ChatPanel({
 
   return (
     <div className="flex h-full flex-col gap-2">
-      <div className="min-h-0 flex-1 overflow-y-auto space-y-1 pr-1">
-        {messages.map((m) => (
-          <div key={m.id} className={cn("text-sm", m.userId === userId && "text-right")}>
-            {!m.isSystem && (
-              <span
-                className={cn(
-                  "text-xs font-semibold",
-                  m.userId === userId ? "text-primary" : "text-muted",
-                )}
-              >
-                {m.userName}
-              </span>
-            )}
-            <p
+      <div className="min-h-0 flex-1 space-y-2 overflow-y-auto pr-1">
+        {messages.length === 0 && (
+          <p className="text-muted pt-8 text-center text-sm">{t("mr.chatEmpty")}</p>
+        )}
+        {messages.map((m, i) => {
+          if (m.isSystem) {
+            return (
+              <p key={m.id} className="text-muted py-0.5 text-center text-xs italic">
+                {m.text}
+              </p>
+            );
+          }
+          const mine = m.userId === userId;
+          const prev = messages[i - 1];
+          // Group consecutive messages from the same author (within 5 min).
+          const grouped =
+            prev && !prev.isSystem && prev.userId === m.userId && m.createdAt - prev.createdAt < 3e5;
+
+          return (
+            <div
+              key={m.id}
               className={cn(
-                "inline-block max-w-[85%] rounded-xl px-2.5 py-1 text-sm",
-                m.isSystem
-                  ? "text-muted text-xs italic"
-                  : m.userId === userId
-                    ? "bg-primary text-white ml-auto"
-                    : "bg-surface-2",
+                "flex items-end gap-2",
+                mine && "flex-row-reverse",
+                grouped ? "mt-0.5" : "mt-2",
               )}
             >
-              {m.text}
-            </p>
-          </div>
-        ))}
+              <div className="w-7 shrink-0">
+                {!grouped && (
+                  <ChatAvatar name={m.userName} avatarUrl={presence[m.userId]?.avatarUrl} />
+                )}
+              </div>
+              <div className={cn("flex max-w-[75%] flex-col", mine && "items-end")}>
+                {!grouped && (
+                  <span className="text-muted mb-0.5 px-1 text-[11px] font-medium">
+                    {mine ? t("mr.you") : m.userName}
+                  </span>
+                )}
+                <div
+                  className={cn(
+                    "group/msg relative rounded-2xl px-3 py-1.5 text-sm break-words",
+                    mine
+                      ? "bg-primary rounded-br-md text-white"
+                      : "bg-surface-2 text-foreground rounded-bl-md",
+                  )}
+                >
+                  {m.text}
+                  <span
+                    className={cn(
+                      "pointer-events-none absolute -bottom-4 text-[10px] opacity-0 transition-opacity group-hover/msg:opacity-100",
+                      mine ? "right-1 text-muted" : "left-1 text-muted",
+                    )}
+                  >
+                    {fmtTime(m.createdAt)}
+                  </span>
+                </div>
+              </div>
+            </div>
+          );
+        })}
         <div ref={bottomRef} />
       </div>
       <div className="flex gap-2">
@@ -283,9 +474,9 @@ function ChatPanel({
           onChange={(e) => setText(e.target.value)}
           placeholder={t("mr.chatPlaceholder")}
           onKeyDown={(e) => e.key === "Enter" && send()}
-          className="flex-1 text-sm"
+          className="flex-1 rounded-full text-sm"
         />
-        <Button size="sm" onClick={send} disabled={!text.trim()}>
+        <Button size="sm" onClick={send} disabled={!text.trim()} className="rounded-full px-3">
           <Icon name="Send" size={16} />
         </Button>
       </div>
@@ -348,10 +539,10 @@ function RoomView({
     messages,
     isHost,
     addSong,
+    addMeta,
     removeSong,
     playSong,
     togglePlay,
-    seek: fbSeek,
     nextSong,
     prevSong,
     sendChat,
@@ -521,7 +712,8 @@ function RoomView({
                 isHost={isHost}
                 onPlay={playSong}
                 onRemove={removeSong}
-                onAdd={addSong}
+                onAddUrl={addSong}
+                onAddMeta={addMeta}
               />
             </div>
           </CardBody>
@@ -532,7 +724,12 @@ function RoomView({
           <CardBody className="h-80 overflow-hidden">
             <h3 className="mb-2 text-sm font-semibold">{t("mr.chat")}</h3>
             <div className="h-[calc(100%-1.75rem)]">
-              <ChatPanel messages={messages} userId={userId} onSend={sendChat} />
+              <ChatPanel
+                messages={messages}
+                userId={userId}
+                presence={presence}
+                onSend={sendChat}
+              />
             </div>
           </CardBody>
         </Card>
@@ -542,15 +739,7 @@ function RoomView({
 }
 
 // ── Room browser (home view) ──────────────────────────────────────────────────
-function RoomBrowser({
-  userId,
-  userName,
-  onEnter,
-}: {
-  userId: string;
-  userName: string;
-  onEnter: (code: string) => void;
-}) {
+function RoomBrowser({ onEnter }: { onEnter: (code: string) => void }) {
   const { t } = useTranslation();
   const toast = useToast();
   const [rooms, setRooms] = useState<MusicRoom[]>([]);
@@ -786,11 +975,5 @@ export default function MusicRoomPage() {
     );
   }
 
-  return (
-    <RoomBrowser
-      userId={userId}
-      userName={userName}
-      onEnter={handleEnter}
-    />
-  );
+  return <RoomBrowser onEnter={handleEnter} />;
 }

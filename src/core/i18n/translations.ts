@@ -437,6 +437,15 @@ const vi: Dict = {
   "mr.notFound": "Không tìm thấy phòng với mã này.",
   "mr.yourName": "Tên của bạn",
   "mr.continue": "Tiếp tục",
+  "mr.searchPlaceholder": "Tìm bài hát hoặc dán link YouTube...",
+  "mr.searchError": "Lỗi tìm kiếm, hãy thử lại.",
+  "mr.added": "Đã thêm vào hàng đợi",
+  "mr.copied": "Đã sao chép link",
+  "mr.copyUrl": "Sao chép link",
+  "mr.playNow": "Phát ngay",
+  "mr.remove": "Xóa",
+  "mr.chatEmpty": "Chưa có tin nhắn nào. Bắt đầu trò chuyện nhé!",
+  "mr.you": "Bạn",
 };
 
 const en: Dict = {
@@ -860,6 +869,15 @@ const en: Dict = {
   "mr.notFound": "Room not found.",
   "mr.yourName": "Your name",
   "mr.continue": "Continue",
+  "mr.searchPlaceholder": "Search songs or paste a YouTube link...",
+  "mr.searchError": "Search failed, please try again.",
+  "mr.added": "Added to queue",
+  "mr.copied": "Link copied",
+  "mr.copyUrl": "Copy link",
+  "mr.playNow": "Play now",
+  "mr.remove": "Remove",
+  "mr.chatEmpty": "No messages yet. Say hi!",
+  "mr.you": "You",
 };
 
 export const dictionaries: Record<Locale, Dict> = { vi, en };

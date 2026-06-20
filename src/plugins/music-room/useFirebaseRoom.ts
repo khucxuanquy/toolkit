@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { onDisconnect, onValue, push, ref, remove, set, update } from "firebase/database";
 import { getRtdb } from "@/core/firebase/app";
-import { extractVideoId, fetchVideoMeta } from "./youtube";
+import { extractVideoId, fetchVideoMeta, type VideoMeta } from "./youtube";
 import type {
   MusicChatMessage,
   MusicPlayerState,
@@ -67,6 +67,7 @@ export interface UseFirebaseRoomReturn {
   messages: MusicChatMessage[];
   isHost: boolean;
   addSong(url: string): Promise<void>;
+  addMeta(meta: VideoMeta): Promise<void>;
   removeSong(id: string): void;
   playSong(id: string): void;
   togglePlay(isPlaying: boolean): void;
@@ -85,12 +86,12 @@ export function useFirebaseRoom(
 ): UseFirebaseRoomReturn {
   const [room, setRoom] = useState<MusicRoom | null>(null);
   const [queue, setQueue] = useState<MusicQueueItem[]>([]);
-  const [playerState, setPlayerState] = useState<MusicPlayerState>({
+  const [playerState, setPlayerState] = useState<MusicPlayerState>(() => ({
     currentItemId: null,
     isPlaying: false,
     currentTime: 0,
     updatedAt: Date.now(),
-  });
+  }));
   const [presence, setPresence] = useState<Record<string, RoomPresence>>({});
   const [messages, setMessages] = useState<MusicChatMessage[]>([]);
 
@@ -167,12 +168,9 @@ export function useFirebaseRoom(
 
   // ── Actions ────────────────────────────────────────────────────────────────
 
-  const addSong = useCallback(
-    async (url: string) => {
+  const pushMeta = useCallback(
+    async (meta: VideoMeta) => {
       if (!db) return;
-      const videoId = extractVideoId(url);
-      if (!videoId) throw new Error("mr.errorUrl");
-      const meta = await fetchVideoMeta(videoId);
       const nextPos = queue.length > 0 ? Math.max(...queue.map((q) => q.position)) + 1 : 0;
       const itemRef = push(ref(db, `${base}/queue`));
       const item: Omit<MusicQueueItem, "id"> = {
@@ -180,7 +178,7 @@ export function useFirebaseRoom(
         title: meta.title,
         thumbnail: meta.thumbnail,
         channel: meta.channel,
-        duration: null,
+        duration: meta.duration ?? null,
         addedBy: userId,
         addedByName: userName,
         position: nextPos,
@@ -199,6 +197,18 @@ export function useFirebaseRoom(
     },
     [db, base, queue, playerState.currentItemId, userId, userName],
   );
+
+  const addSong = useCallback(
+    async (url: string) => {
+      const videoId = extractVideoId(url);
+      if (!videoId) throw new Error("mr.errorUrl");
+      const meta = await fetchVideoMeta(videoId);
+      await pushMeta(meta);
+    },
+    [pushMeta],
+  );
+
+  const addMeta = useCallback((meta: VideoMeta) => pushMeta(meta), [pushMeta]);
 
   const removeSong = useCallback(
     (id: string) => {
@@ -295,6 +305,7 @@ export function useFirebaseRoom(
     messages,
     isHost,
     addSong,
+    addMeta,
     removeSong,
     playSong,
     togglePlay,

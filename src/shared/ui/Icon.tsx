@@ -70,6 +70,15 @@ import {
   Crown,
   Mic,
   AudioLines,
+  Music,
+  Loader2,
+  Link,
+  Send,
+  SkipBack,
+  SkipForward,
+  Wifi,
+  DoorOpen,
+  ChevronRight,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/shared/utils/cn";
@@ -150,6 +159,15 @@ export const ICONS = {
   Crown,
   Mic,
   AudioLines,
+  Music,
+  Loader2,
+  Link,
+  Send,
+  SkipBack,
+  SkipForward,
+  Wifi,
+  DoorOpen,
+  ChevronRight,
 } satisfies Record<string, LucideIcon>;
 
 export type IconName = keyof typeof ICONS;
