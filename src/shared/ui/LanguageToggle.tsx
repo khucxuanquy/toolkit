@@ -3,7 +3,6 @@
 import { useTranslation } from "@/core/i18n/useTranslation";
 import { LOCALES, LOCALE_LABELS, LOCALE_FLAGS } from "@/core/i18n/locale-store";
 import { Dropdown } from "./Dropdown";
-import { Icon } from "./Icon";
 
 /**
  * Language picker. Lists every locale in `LOCALES`, so adding a new language is
@@ -22,7 +21,6 @@ export function LanguageToggle() {
           title={t("nav.language")}
           className="border-border bg-surface text-foreground hover:bg-surface-2 flex h-10 items-center gap-1.5 rounded-xl border px-2.5 text-sm font-semibold transition-colors"
         >
-          <Icon name="Languages" size={18} />
           <span>{LOCALE_FLAGS[locale]}</span>
           <span className="uppercase">{locale}</span>
         </span>

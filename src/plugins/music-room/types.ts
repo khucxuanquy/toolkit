@@ -13,7 +13,10 @@ export interface RoomPresence {
 
 export interface MusicQueueItem {
   id: string;
-  sourceId: string; // YouTube video ID
+  source: "youtube" | "spotify" | "soundcloud" | "tiktok";
+  sourceId: string; // YouTube video ID, or "type/id" / path for other providers
+  url: string; // canonical original URL
+  embedUrl: string; // iframe src for non-youtube providers ("" for youtube)
   title: string;
   thumbnail: string;
   channel: string;

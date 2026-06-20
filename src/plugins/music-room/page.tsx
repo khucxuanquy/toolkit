@@ -16,15 +16,26 @@ import { useAuthStore } from "@/core/auth/auth-store";
 import { realtimeEnabled } from "@/core/firebase/config";
 import { getRtdb } from "@/core/firebase/app";
 import { checkRoomExists, createRoom, useFirebaseRoom } from "./useFirebaseRoom";
-import {
-  ensureYtApi,
-  searchYouTube,
-  watchUrl,
-  youtubeSearchEnabled,
-  type VideoMeta,
-  type YTPlayer,
-} from "./youtube";
+import { ensureYtApi, searchYouTube, youtubeSearchEnabled, type YTPlayer } from "./youtube";
+import { isMediaUrl, type MediaMeta, type Source } from "./sources";
 import type { MusicChatMessage, MusicQueueItem, MusicRoom, RoomPresence } from "./types";
+
+// ── Source visual identity ────────────────────────────────────────────────────
+const SOURCE_ICON: Record<Source, string> = {
+  youtube: "Play",
+  spotify: "Music",
+  soundcloud: "AudioLines",
+  tiktok: "Music2",
+};
+const SOURCE_COLOR: Record<Source, string> = {
+  youtube: "text-red-500",
+  spotify: "text-green-500",
+  soundcloud: "text-orange-500",
+  tiktok: "text-pink-500",
+};
+function srcOf(item: { source?: Source }): Source {
+  return item.source ?? "youtube";
+}
 
 // ── Guest ID (persisted in sessionStorage) ───────────────────────────────────
 function useGuestId(): string {
@@ -116,23 +127,77 @@ const YouTubePlayer = forwardRef<
 });
 YouTubePlayer.displayName = "YouTubePlayer";
 
+// ── Embed player (Spotify / SoundCloud / TikTok) ──────────────────────────────
+// These providers don't expose a JS control API for cross-client position sync,
+// so we render their official embed. Everyone sees the same current track; each
+// plays it locally. The host still controls which track is current + skip.
+function EmbedPlayer({ item }: { item: MusicQueueItem }) {
+  const source = srcOf(item);
+  const heights: Record<Source, string> = {
+    youtube: "aspect-video",
+    spotify: "h-[152px]",
+    soundcloud: "h-[166px]",
+    tiktok: "h-[640px] max-w-[340px] mx-auto",
+  };
+  return (
+    <div className={cn("w-full overflow-hidden rounded-xl bg-black", heights[source])}>
+      <iframe
+        key={item.id}
+        src={item.embedUrl}
+        title={item.title}
+        className="h-full w-full"
+        allow="autoplay; encrypted-media; clipboard-write; picture-in-picture; fullscreen"
+        allowFullScreen
+        loading="lazy"
+      />
+    </div>
+  );
+}
+
+// ── Animated tab title while music plays ──────────────────────────────────────
+// Shows "♫ <track>" in the browser tab, the note pulsing and a long title
+// scrolling. Restores the page's own title when nothing is playing / on unmount.
+function usePlayingTabTitle(title: string | null) {
+  useEffect(() => {
+    if (!title) return;
+    const original = document.title;
+    const notes = ["♫", "♪", "♬", "♩"];
+    const label = title.length > 36 ? `${title}    ` : title; // pad for marquee gap
+    let frame = 0;
+    const tick = () => {
+      const note = notes[frame % notes.length];
+      const scrolled =
+        label.length > 36 ? label.slice(frame % label.length) + label.slice(0, frame % label.length) : label;
+      document.title = `${note} ${scrolled.slice(0, 60)}`;
+      frame += 1;
+    };
+    tick();
+    const id = setInterval(tick, 600);
+    return () => {
+      clearInterval(id);
+      document.title = original;
+    };
+  }, [title]);
+}
+
 // ── Add-song bar (search or paste URL) ────────────────────────────────────────
 function AddSongBar({
   onAddUrl,
   onAddMeta,
 }: {
   onAddUrl: (url: string) => Promise<void>;
-  onAddMeta: (meta: VideoMeta) => Promise<void>;
+  onAddMeta: (meta: MediaMeta) => Promise<void>;
 }) {
   const { t } = useTranslation();
   const toast = useToast();
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
-  const [results, setResults] = useState<VideoMeta[]>([]);
+  const [results, setResults] = useState<MediaMeta[]>([]);
   const [searching, setSearching] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const isUrl = (s: string) => /youtube\.com|youtu\.be|^[A-Za-z0-9_-]{11}$/.test(s.trim());
+  // A pasted provider URL (YouTube/Spotify/SoundCloud/TikTok) or a bare YT id.
+  const isUrl = (s: string) => isMediaUrl(s) || /^[A-Za-z0-9_-]{11}$/.test(s.trim());
   const looksLikeUrl = isUrl(text);
 
   // Clean up a pending debounce on unmount.
@@ -180,7 +245,7 @@ function AddSongBar({
     }
   };
 
-  const addResult = async (meta: VideoMeta) => {
+  const addResult = async (meta: MediaMeta) => {
     setBusy(true);
     try {
       await onAddMeta(meta);
@@ -271,14 +336,14 @@ function QueuePanel({
   onPlay: (id: string) => void;
   onRemove: (id: string) => void;
   onAddUrl: (url: string) => Promise<void>;
-  onAddMeta: (meta: VideoMeta) => Promise<void>;
+  onAddMeta: (meta: MediaMeta) => Promise<void>;
 }) {
   const { t } = useTranslation();
   const toast = useToast();
 
-  const copyUrl = async (sourceId: string) => {
+  const copyUrl = async (url: string) => {
     try {
-      await navigator.clipboard.writeText(watchUrl(sourceId));
+      await navigator.clipboard.writeText(url);
       toast(t("mr.copied"), "success");
     } catch {
       /* ignore */
@@ -312,12 +377,28 @@ function QueuePanel({
                     i + 1
                   )}
                 </span>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={item.thumbnail}
-                  alt=""
-                  className="h-8 w-14 shrink-0 rounded object-cover"
-                />
+                <span className="relative shrink-0">
+                  {item.thumbnail ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={item.thumbnail} alt="" className="h-8 w-14 rounded object-cover" />
+                  ) : (
+                    <span className="bg-surface-2 flex h-8 w-14 items-center justify-center rounded">
+                      <Icon
+                        name={SOURCE_ICON[srcOf(item)]}
+                        size={16}
+                        className={SOURCE_COLOR[srcOf(item)]}
+                      />
+                    </span>
+                  )}
+                  <Icon
+                    name={SOURCE_ICON[srcOf(item)]}
+                    size={11}
+                    className={cn(
+                      "absolute -right-1 -top-1 rounded-full bg-surface p-0.5",
+                      SOURCE_COLOR[srcOf(item)],
+                    )}
+                  />
+                </span>
                 <div className="min-w-0 flex-1">
                   <p className="truncate leading-tight">{item.title}</p>
                   <p className="text-muted truncate text-xs">
@@ -327,7 +408,7 @@ function QueuePanel({
                 </div>
                 <div className="flex shrink-0 gap-1 opacity-0 transition-opacity group-hover:opacity-100">
                   <button
-                    onClick={() => copyUrl(item.sourceId)}
+                    onClick={() => copyUrl(item.url)}
                     className="text-muted hover:text-foreground"
                     title={t("mr.copyUrl")}
                   >
@@ -552,6 +633,10 @@ function RoomView({
   const [tab, setTab] = useState<"queue" | "chat">("queue");
 
   const currentItem = queue.find((q) => q.id === playerState.currentItemId) ?? null;
+  const isYouTube = currentItem ? srcOf(currentItem) === "youtube" : false;
+
+  // Animate the browser tab title with the now-playing track.
+  usePlayingTabTitle(currentItem && playerState.isPlaying ? currentItem.title : null);
 
   // Host: report progress every 3 s while playing
   useEffect(() => {
@@ -631,24 +716,26 @@ function RoomView({
       {/* Player */}
       {currentItem ? (
         <div className="space-y-2">
-          <YouTubePlayer
-            ref={ytRef}
-            videoId={currentItem.sourceId}
-            onStateChange={handleYTState}
-          />
+          {isYouTube ? (
+            <YouTubePlayer
+              ref={ytRef}
+              videoId={currentItem.sourceId}
+              onStateChange={handleYTState}
+            />
+          ) : (
+            <EmbedPlayer item={currentItem} />
+          )}
           {/* Transport controls (host only) */}
           {isHost && (
             <div className="flex items-center justify-center gap-2">
               <Button variant="ghost" size="sm" onClick={prevSong} disabled={queue.indexOf(currentItem) === 0}>
                 <Icon name="SkipBack" size={18} />
               </Button>
-              <Button
-                size="sm"
-                onClick={() => togglePlay(!playerState.isPlaying)}
-                className="w-10"
-              >
-                <Icon name={playerState.isPlaying ? "Pause" : "Play"} size={18} />
-              </Button>
+              {isYouTube && (
+                <Button size="sm" onClick={() => togglePlay(!playerState.isPlaying)} className="w-10">
+                  <Icon name={playerState.isPlaying ? "Pause" : "Play"} size={18} />
+                </Button>
+              )}
               <Button
                 variant="ghost"
                 size="sm"
@@ -659,12 +746,18 @@ function RoomView({
               </Button>
             </div>
           )}
-          <p className="text-muted truncate text-center text-sm">
-            {currentItem.title}
-            {currentItem.channel && (
-              <span className="text-muted/60"> · {currentItem.channel}</span>
-            )}
+          <p className="text-muted flex items-center justify-center gap-1.5 truncate text-center text-sm">
+            <Icon
+              name={SOURCE_ICON[srcOf(currentItem)]}
+              size={13}
+              className={SOURCE_COLOR[srcOf(currentItem)]}
+            />
+            <span className="truncate">{currentItem.title}</span>
+            {currentItem.channel && <span className="text-muted/60 shrink-0"> · {currentItem.channel}</span>}
           </p>
+          {!isYouTube && (
+            <p className="text-muted/70 text-center text-xs">{t("mr.embedNote")}</p>
+          )}
         </div>
       ) : (
         <Card>

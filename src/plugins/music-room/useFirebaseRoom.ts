@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { onDisconnect, onValue, push, ref, remove, set, update } from "firebase/database";
 import { getRtdb } from "@/core/firebase/app";
-import { extractVideoId, fetchVideoMeta, type VideoMeta } from "./youtube";
+import { fetchMediaMeta, type MediaMeta } from "./sources";
 import type {
   MusicChatMessage,
   MusicPlayerState,
@@ -67,7 +67,7 @@ export interface UseFirebaseRoomReturn {
   messages: MusicChatMessage[];
   isHost: boolean;
   addSong(url: string): Promise<void>;
-  addMeta(meta: VideoMeta): Promise<void>;
+  addMeta(meta: MediaMeta): Promise<void>;
   removeSong(id: string): void;
   playSong(id: string): void;
   togglePlay(isPlaying: boolean): void;
@@ -140,9 +140,24 @@ export function useFirebaseRoom(
   useEffect(() => {
     if (!db) return;
     return onValue(ref(db, `${base}/queue`), (s) => {
-      const val = (s.val() ?? {}) as Record<string, Omit<MusicQueueItem, "id">>;
-      const items = Object.entries(val)
-        .map(([id, v]) => ({ ...v, id }))
+      const val = (s.val() ?? {}) as Record<string, Partial<MusicQueueItem>>;
+      const items: MusicQueueItem[] = Object.entries(val)
+        // Backfill source fields for items added before multi-source support.
+        .map(([id, v]) => ({
+          id,
+          source: v.source ?? "youtube",
+          sourceId: v.sourceId ?? "",
+          url: v.url ?? `https://www.youtube.com/watch?v=${v.sourceId ?? ""}`,
+          embedUrl: v.embedUrl ?? "",
+          title: v.title ?? "",
+          thumbnail: v.thumbnail ?? "",
+          channel: v.channel ?? "",
+          duration: v.duration ?? null,
+          addedBy: v.addedBy ?? "",
+          addedByName: v.addedByName ?? "",
+          position: v.position ?? 0,
+          addedAt: v.addedAt ?? 0,
+        }))
         .sort((a, b) => a.position - b.position);
       setQueue(items);
     });
@@ -169,12 +184,15 @@ export function useFirebaseRoom(
   // ── Actions ────────────────────────────────────────────────────────────────
 
   const pushMeta = useCallback(
-    async (meta: VideoMeta) => {
+    async (meta: MediaMeta) => {
       if (!db) return;
       const nextPos = queue.length > 0 ? Math.max(...queue.map((q) => q.position)) + 1 : 0;
       const itemRef = push(ref(db, `${base}/queue`));
       const item: Omit<MusicQueueItem, "id"> = {
+        source: meta.source,
         sourceId: meta.sourceId,
+        url: meta.url,
+        embedUrl: meta.embedUrl,
         title: meta.title,
         thumbnail: meta.thumbnail,
         channel: meta.channel,
@@ -200,15 +218,13 @@ export function useFirebaseRoom(
 
   const addSong = useCallback(
     async (url: string) => {
-      const videoId = extractVideoId(url);
-      if (!videoId) throw new Error("mr.errorUrl");
-      const meta = await fetchVideoMeta(videoId);
+      const meta = await fetchMediaMeta(url);
       await pushMeta(meta);
     },
     [pushMeta],
   );
 
-  const addMeta = useCallback((meta: VideoMeta) => pushMeta(meta), [pushMeta]);
+  const addMeta = useCallback((meta: MediaMeta) => pushMeta(meta), [pushMeta]);
 
   const removeSong = useCallback(
     (id: string) => {

@@ -1,39 +1,6 @@
-/** YouTube helpers — client-safe (no server env vars). */
+/** YouTube IFrame API + Data-API search — client-safe (no server env vars). */
 
-export function extractVideoId(url: string): string | null {
-  const patterns = [
-    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([A-Za-z0-9_-]{11})/,
-    /^([A-Za-z0-9_-]{11})$/, // bare ID
-  ];
-  for (const re of patterns) {
-    const m = url.trim().match(re);
-    if (m) return m[1];
-  }
-  return null;
-}
-
-export interface VideoMeta {
-  sourceId: string;
-  title: string;
-  thumbnail: string;
-  channel: string;
-  duration: string | null;
-}
-
-export async function fetchVideoMeta(videoId: string): Promise<VideoMeta> {
-  const res = await fetch(
-    `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`,
-  );
-  if (!res.ok) throw new Error("mr.errorUrl");
-  const data = await res.json();
-  return {
-    sourceId: videoId,
-    title: data.title ?? "Unknown",
-    thumbnail: `https://i.ytimg.com/vi/${videoId}/mqdefault.jpg`,
-    channel: data.author_name ?? "",
-    duration: null, // oEmbed doesn't expose duration
-  };
-}
+import type { MediaMeta } from "./sources";
 
 // ── Search (YouTube Data API v3) ──────────────────────────────────────────────
 // Uses a public, referrer-restricted browser key. When absent, search is hidden
@@ -70,7 +37,7 @@ async function fetchDurations(ids: string[]): Promise<Record<string, string>> {
   return map;
 }
 
-export async function searchYouTube(query: string, maxResults = 12): Promise<VideoMeta[]> {
+export async function searchYouTube(query: string, maxResults = 12): Promise<MediaMeta[]> {
   if (!youtubeSearchEnabled || !query.trim()) return [];
   const url = new URL(`${YT_API}/search`);
   url.searchParams.set("part", "snippet");
@@ -100,17 +67,15 @@ export async function searchYouTube(query: string, maxResults = 12): Promise<Vid
 
   const durations = await fetchDurations(items.map((i) => i.id));
   return items.map((i) => ({
+    source: "youtube" as const,
     sourceId: i.id,
+    url: `https://www.youtube.com/watch?v=${i.id}`,
+    embedUrl: "",
     title: i.title,
     thumbnail: i.thumbnail,
     channel: i.channel,
     duration: durations[i.id] ?? null,
   }));
-}
-
-/** Build a watchable URL from a video ID. */
-export function watchUrl(videoId: string): string {
-  return `https://www.youtube.com/watch?v=${videoId}`;
 }
 
 // ── YouTube IFrame API ────────────────────────────────────────────────────────
