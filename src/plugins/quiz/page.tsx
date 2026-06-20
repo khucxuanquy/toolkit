@@ -6,6 +6,7 @@ import { Button, Card, CardBody, Icon, Input, useToast } from "@/shared/ui";
 import { useTranslation } from "@/core/i18n/useTranslation";
 import { cn } from "@/shared/utils/cn";
 import { useAuthStore } from "@/core/auth/auth-store";
+import { LoginRequired } from "@/shared/components/LoginRequired";
 import { realtimeEnabled } from "@/core/firebase/config";
 import { getRtdb } from "@/core/firebase/app";
 import { createQuizRoom, quizRoomExists, useQuizRoom } from "./useQuizRoom";
@@ -14,19 +15,6 @@ import type { QuizRoomMeta } from "./types";
 
 const OPT_COLOR = ["bg-rose-500", "bg-sky-500", "bg-amber-500", "bg-emerald-500"];
 const OPT_SHAPE = ["▲", "◆", "●", "■"];
-
-function useGuestId(): string {
-  const [id] = useState(() => {
-    if (typeof sessionStorage === "undefined") return crypto.randomUUID();
-    const k = "quiz-guest-id";
-    const s = sessionStorage.getItem(k);
-    if (s) return s;
-    const n = crypto.randomUUID();
-    sessionStorage.setItem(k, n);
-    return n;
-  });
-  return id;
-}
 
 function Room({
   code,
@@ -333,14 +321,8 @@ function Browser({ onEnter }: { onEnter: (code: string) => void }) {
 export default function QuizPage() {
   const { t } = useTranslation();
   const authUser = useAuthStore((s) => s.user);
-  const guestId = useGuestId();
-  const [guestName, setGuestName] = useState("");
-  const [nameInput, setNameInput] = useState("");
-  const [pending, setPending] = useState<string | null>(null);
+  const hydrated = useAuthStore((s) => s.hydrated);
   const [active, setActive] = useState<string | null>(null);
-
-  const userId = authUser?.id ?? guestId;
-  const userName = authUser?.name ?? guestName;
 
   if (!realtimeEnabled) {
     return (
@@ -353,36 +335,11 @@ export default function QuizPage() {
     );
   }
 
-  if (!userName && pending !== null) {
-    const go = () => {
-      if (!nameInput.trim()) return;
-      setGuestName(nameInput.trim());
-      setActive(pending);
-      setPending(null);
-    };
-    return (
-      <Card className="mx-auto max-w-sm">
-        <CardBody className="space-y-4">
-          <div className="text-center">
-            <Icon name="Brain" size={32} className="text-primary mx-auto mb-2" />
-            <h2 className="text-lg font-bold">{t("mr.yourName")}</h2>
-          </div>
-          <Input value={nameInput} onChange={(e) => setNameInput(e.target.value)} placeholder={t("mr.yourName")} autoFocus onKeyDown={(e) => e.key === "Enter" && go()} />
-          <Button className="w-full" disabled={!nameInput.trim()} onClick={go}>
-            {t("mr.continue")}
-          </Button>
-        </CardBody>
-      </Card>
-    );
-  }
-
-  const enter = (code: string) => {
-    if (!userName) setPending(code);
-    else setActive(code);
-  };
+  if (!hydrated) return null;
+  if (!authUser) return <LoginRequired icon="Brain" />;
 
   if (active) {
-    return <Room code={active} userId={userId} userName={userName} avatarUrl={authUser?.avatarUrl} onLeave={() => setActive(null)} />;
+    return <Room code={active} userId={authUser.id} userName={authUser.name} avatarUrl={authUser.avatarUrl} onLeave={() => setActive(null)} />;
   }
-  return <Browser onEnter={enter} />;
+  return <Browser onEnter={setActive} />;
 }

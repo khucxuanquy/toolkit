@@ -13,6 +13,7 @@ import { Button, Card, CardBody, Icon, Input, Modal, useToast } from "@/shared/u
 import { useTranslation } from "@/core/i18n/useTranslation";
 import { cn } from "@/shared/utils/cn";
 import { useAuthStore } from "@/core/auth/auth-store";
+import { LoginRequired } from "@/shared/components/LoginRequired";
 import { realtimeEnabled } from "@/core/firebase/config";
 import { getRtdb } from "@/core/firebase/app";
 import { checkRoomExists, createRoom, pruneStaleRooms, useFirebaseRoom } from "./useFirebaseRoom";
@@ -43,19 +44,6 @@ const SOURCE_COLOR: Record<Source, string> = {
 };
 function srcOf(item: { source?: Source }): Source {
   return item.source ?? "youtube";
-}
-
-// ── Guest ID (persisted in sessionStorage) ───────────────────────────────────
-function useGuestId(): string {
-  const [id] = useState(() => {
-    if (typeof sessionStorage === "undefined") return crypto.randomUUID();
-    const stored = sessionStorage.getItem("mr-guest-id");
-    if (stored) return stored;
-    const next = crypto.randomUUID();
-    sessionStorage.setItem("mr-guest-id", next);
-    return next;
-  });
-  return id;
 }
 
 // ── YouTube IFrame player component ──────────────────────────────────────────
@@ -1141,15 +1129,8 @@ function RoomBrowser({
 export default function MusicRoomPage() {
   const { t } = useTranslation();
   const authUser = useAuthStore((s) => s.user);
-  const guestId = useGuestId();
-  const [guestName, setGuestName] = useState("");
-  const [nameInput, setNameInput] = useState("");
-  const [pendingCode, setPendingCode] = useState<string | null>(null);
+  const hydrated = useAuthStore((s) => s.hydrated);
   const [activeCode, setActiveCode] = useState<string | null>(null);
-
-  const userId = authUser?.id ?? guestId;
-  const userName = authUser?.name ?? guestName;
-  const avatarUrl = authUser?.avatarUrl;
 
   if (!realtimeEnabled) {
     return (
@@ -1163,51 +1144,15 @@ export default function MusicRoomPage() {
     );
   }
 
-  // If no name yet, show prompt before entering a room
-  if (!userName && pendingCode !== null) {
-    return (
-      <Card className="mx-auto max-w-sm">
-        <CardBody className="space-y-4">
-          <div className="text-center">
-            <Icon name="Music" size={32} className="text-primary mx-auto mb-2" />
-            <h2 className="font-bold text-lg">{t("mr.yourName")}</h2>
-          </div>
-          <Input
-            value={nameInput}
-            onChange={(e) => setNameInput(e.target.value)}
-            placeholder={t("mr.yourName")}
-            autoFocus
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && nameInput.trim()) {
-                setGuestName(nameInput.trim());
-                setActiveCode(pendingCode);
-                setPendingCode(null);
-              }
-            }}
-          />
-          <Button
-            className="w-full"
-            disabled={!nameInput.trim()}
-            onClick={() => {
-              setGuestName(nameInput.trim());
-              setActiveCode(pendingCode);
-              setPendingCode(null);
-            }}
-          >
-            {t("mr.continue")}
-          </Button>
-        </CardBody>
-      </Card>
-    );
-  }
+  // Avoid a flash of the login gate before the session resolves.
+  if (!hydrated) return null;
 
-  const handleEnter = (code: string) => {
-    if (!userName) {
-      setPendingCode(code);
-      return;
-    }
-    setActiveCode(code);
-  };
+  // Realtime rooms require a signed-in account.
+  if (!authUser) return <LoginRequired icon="Music" />;
+
+  const userId = authUser.id;
+  const userName = authUser.name;
+  const avatarUrl = authUser.avatarUrl;
 
   if (activeCode) {
     return (
@@ -1221,5 +1166,5 @@ export default function MusicRoomPage() {
     );
   }
 
-  return <RoomBrowser onEnter={handleEnter} userId={userId} userName={userName} />;
+  return <RoomBrowser onEnter={setActiveCode} userId={userId} userName={userName} />;
 }
