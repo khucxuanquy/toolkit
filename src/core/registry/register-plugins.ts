@@ -29,6 +29,7 @@ import "@/plugins/route-tracker";
 import "@/plugins/speech";
 import "@/plugins/music-room";
 import "@/plugins/sudoku";
+import "@/plugins/draw-guess";
 
 /** Imported for its side effects only. */
 export const PLUGINS_REGISTERED = true;

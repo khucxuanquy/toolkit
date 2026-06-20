@@ -18,6 +18,16 @@
       ".write": true
     },
 
+    "drawRooms": {
+      ".read": true,
+      ".write": true
+    },
+
+    "quizRooms": {
+      ".read": true,
+      ".write": true
+    },
+
     "feedback": {
       ".read": "auth != null && root.child('admins').child(auth.uid).exists()",
       "$id": {

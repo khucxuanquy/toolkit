@@ -519,6 +519,24 @@ const vi: Dict = {
   "su.solved": "Hoàn thành!",
   "su.solvedMsg": "Bạn đã giải xong trong {time}.",
   "su.newBest": "Kỷ lục mới! 🎉",
+
+  // Draw & Guess
+  "dg.title": "Vẽ & Đoán",
+  "dg.createRoom": "Tạo phòng",
+  "dg.openRooms": "Phòng đang mở",
+  "dg.turn": "Lượt",
+  "dg.waitingStart": "Chờ bắt đầu...",
+  "dg.needPlayers": "Cần ít nhất 2 người chơi.",
+  "dg.start": "Bắt đầu",
+  "dg.pickWord": "Chọn một từ để vẽ:",
+  "dg.choosing": "{name} đang chọn từ...",
+  "dg.wordWas": "Từ cần đoán là:",
+  "dg.gameOver": "Kết thúc!",
+  "dg.playAgain": "Chơi lại",
+  "dg.clear": "Xóa hết",
+  "dg.guessPlaceholder": "Nhập câu trả lời...",
+  "dg.youDraw": "Bạn đang vẽ — đừng nói ra đáp án nhé!",
+  "dg.waitTurn": "Chờ lượt tiếp theo...",
 };
 
 const en: Dict = {
@@ -1024,6 +1042,24 @@ const en: Dict = {
   "su.solved": "Solved!",
   "su.solvedMsg": "You solved it in {time}.",
   "su.newBest": "New best time! 🎉",
+
+  // Draw & Guess
+  "dg.title": "Draw & Guess",
+  "dg.createRoom": "Create room",
+  "dg.openRooms": "Open rooms",
+  "dg.turn": "Turn",
+  "dg.waitingStart": "Waiting to start...",
+  "dg.needPlayers": "Need at least 2 players.",
+  "dg.start": "Start",
+  "dg.pickWord": "Pick a word to draw:",
+  "dg.choosing": "{name} is picking a word...",
+  "dg.wordWas": "The word was:",
+  "dg.gameOver": "Game over!",
+  "dg.playAgain": "Play again",
+  "dg.clear": "Clear",
+  "dg.guessPlaceholder": "Type your guess...",
+  "dg.youDraw": "You're drawing — don't reveal the word!",
+  "dg.waitTurn": "Waiting for the next turn...",
 };
 
 export const dictionaries: Record<Locale, Dict> = { vi, en };
