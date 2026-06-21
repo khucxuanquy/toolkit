@@ -101,7 +101,7 @@ function RecentIcon({ plugin, badge }: { plugin: PlatformPlugin; badge?: number 
     >
       <span
         className={cn(
-          "flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br text-white shadow-sm",
+          "flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br text-white shadow-sm",
           plugin.accent ?? "from-primary to-accent",
         )}
       >

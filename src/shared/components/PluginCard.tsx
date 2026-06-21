@@ -23,7 +23,7 @@ export function PluginCard({ plugin }: { plugin: PlatformPlugin }) {
         <div className="flex items-start justify-between">
           <span
             className={cn(
-              "flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br text-white",
+              "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br text-white",
               plugin.accent ?? "from-primary to-accent",
             )}
           >

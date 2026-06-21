@@ -29,8 +29,8 @@ export function Navbar() {
   );
 
   return (
-    <header className="border-border bg-background/80 sticky top-0 z-40 border-b backdrop-blur">
-      <div className="mx-auto max-w-6xl px-4">
+    <header className="border-border bg-background/80 sticky top-0 z-40 border-b backdrop-blur pt-[env(safe-area-inset-top)]">
+      <div className="mx-auto max-w-6xl pl-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))]">
         {/* Top row */}
         <div className="flex h-16 items-center gap-3">
           <Link href="/" className="flex shrink-0 items-center gap-2">

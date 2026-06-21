@@ -32,6 +32,9 @@ import "@/plugins/sudoku";
 import "@/plugins/draw-guess";
 import "@/plugins/quiz";
 import "@/plugins/weather";
+import "@/plugins/archery";
+import "@/plugins/bubble-shooter";
+import "@/plugins/billiards";
 
 /** Imported for its side effects only. */
 export const PLUGINS_REGISTERED = true;

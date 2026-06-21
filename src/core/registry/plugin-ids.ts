@@ -21,6 +21,9 @@ import { manifest as sudoku } from "@/plugins/sudoku/manifest";
 import { manifest as drawGuess } from "@/plugins/draw-guess/manifest";
 import { manifest as quiz } from "@/plugins/quiz/manifest";
 import { manifest as weather } from "@/plugins/weather/manifest";
+import { manifest as archery } from "@/plugins/archery/manifest";
+import { manifest as bubbleShooter } from "@/plugins/bubble-shooter/manifest";
+import { manifest as billiards } from "@/plugins/billiards/manifest";
 
 /**
  * Plugin ids known at build time. Used by `generateStaticParams` so the static
@@ -53,6 +56,9 @@ const MANIFESTS = [
   drawGuess,
   quiz,
   weather,
+  archery,
+  bubbleShooter,
+  billiards,
 ];
 
 export const PLUGIN_IDS: string[] = MANIFESTS.map((m) => m.id);

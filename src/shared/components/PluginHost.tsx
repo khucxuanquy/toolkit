@@ -90,14 +90,15 @@ export function PluginHost({ pluginId }: { pluginId: string }) {
       <div className="flex items-center gap-3">
         <Link
           href="/"
-          aria-label={t("host.back")}
-          className="border-border bg-surface text-muted hover:bg-surface-2 hover:text-foreground flex h-10 w-10 items-center justify-center rounded-xl border transition-colors"
+          aria-label={t("host.home")}
+          title={t("host.home")}
+          className="border-border bg-surface text-muted hover:bg-surface-2 hover:text-foreground flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border transition-colors"
         >
           <Icon name="Home" size={18} />
         </Link>
         <span
           ref={iconRef}
-          className={`flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br text-white ${plugin.accent ?? "from-primary to-accent"}`}
+          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br text-white ${plugin.accent ?? "from-primary to-accent"}`}
         >
           <Icon name={plugin.icon} size={20} />
         </span>

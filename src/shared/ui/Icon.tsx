@@ -99,6 +99,8 @@ import {
   CloudFog,
   Locate,
   Gauge,
+  CircleDot,
+  Grape,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/shared/utils/cn";
@@ -208,6 +210,8 @@ export const ICONS = {
   CloudFog,
   Locate,
   Gauge,
+  CircleDot,
+  Grape,
 } satisfies Record<string, LucideIcon>;
 
 export type IconName = keyof typeof ICONS;
