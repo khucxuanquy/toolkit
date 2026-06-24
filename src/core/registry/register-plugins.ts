@@ -35,6 +35,7 @@ import "@/plugins/weather";
 import "@/plugins/archery";
 import "@/plugins/bubble-shooter";
 import "@/plugins/billiards";
+import "@/plugins/dev-tools";
 
 /** Imported for its side effects only. */
 export const PLUGINS_REGISTERED = true;

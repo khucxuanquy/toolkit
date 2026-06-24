@@ -24,6 +24,7 @@ import { manifest as weather } from "@/plugins/weather/manifest";
 import { manifest as archery } from "@/plugins/archery/manifest";
 import { manifest as bubbleShooter } from "@/plugins/bubble-shooter/manifest";
 import { manifest as billiards } from "@/plugins/billiards/manifest";
+import { manifest as devTools } from "@/plugins/dev-tools/manifest";
 
 /**
  * Plugin ids known at build time. Used by `generateStaticParams` so the static
@@ -59,6 +60,7 @@ const MANIFESTS = [
   archery,
   bubbleShooter,
   billiards,
+  devTools,
 ];
 
 export const PLUGIN_IDS: string[] = MANIFESTS.map((m) => m.id);
