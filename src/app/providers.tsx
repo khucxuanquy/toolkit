@@ -5,6 +5,7 @@ import { useEffect, type ReactNode } from "react";
 import "@/core/registry/register-plugins";
 import { usePlatformStore } from "@/core/services/platform-store";
 import { useAuthStore } from "@/core/auth/auth-store";
+import { useThemeStore, applyTheme } from "@/core/theme/theme-store";
 import { PwaManager } from "@/core/services/PwaManager";
 import { Toaster } from "@/shared/ui";
 import { FeedbackButton } from "@/shared/components/FeedbackButton";
@@ -13,6 +14,14 @@ import { firebaseEnabled } from "@/core/firebase/config";
 export function Providers({ children }: { children: ReactNode }) {
   const hydrate = usePlatformStore((s) => s.hydrate);
   const hydrateAuth = useAuthStore((s) => s.hydrate);
+  const theme = useThemeStore((s) => s.theme);
+
+  // Re-apply theme after React hydration. React 19 reconciles <html> attributes
+  // during hydration which can strip the `dark` class added by the inline script.
+  // This effect runs after every render where the stored theme changes, restoring it.
+  useEffect(() => {
+    applyTheme(theme);
+  }, [theme]);
 
   useEffect(() => {
     void hydrate();

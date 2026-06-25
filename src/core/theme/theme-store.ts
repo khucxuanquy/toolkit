@@ -16,7 +16,7 @@ interface ThemeState {
 const STORAGE_KEY = "toolkit-theme";
 
 /** Apply the theme class to <html> and keep the browser UI color in sync. */
-function applyTheme(theme: Theme) {
+export function applyTheme(theme: Theme) {
   if (typeof document === "undefined") return;
   const root = document.documentElement;
   root.classList.toggle("dark", theme === "dark");
